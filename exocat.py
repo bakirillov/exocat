@@ -6,6 +6,12 @@ import os.path as op
 from tqdm import tqdm
 from datetime import datetime
 
+THECAT = """ _._     _,-'""`-._
+(,-.`._,'(       |\`-/|
+    `-.-' \ )-`( , o o)
+          `-    \`_`"'-
+"""
+
 
 class ExoCat():
     
@@ -15,34 +21,35 @@ class ExoCat():
         with open("config.json", "r") as ih:
             self.config = json.loads(ih.read())
         
-    def new(self):
+    def new(self, title):
         cid = datetime.now().strftime("%d%m%Y%H%M%S")
-        
+        if not op.exists(self.config["folder"]):
+            os.makedirs(self.config["folder"])
+        path = op.join(self.config["folder"], cid+".md")
+        tmpl = self.template.replace("ID", cid)
+        if title == "None":
+            title = input("Enter the title of the card: ")
+        tmpl = tmpl.replace("TITLE", title)
+        with open(path, "w") as oh:
+            oh.write(tmpl)
+        os.system(self.config["editor"]+" "+path)
         
     def index(self):
         pass
         
 
-
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    print(THECAT)
+    parser = argparse.ArgumentParser(description="A personal CLI exocortex assistant")
     parser.add_argument(
-        "-c", "--config",
-        dest="config",
-        action="store", 
-        help="set config file", 
-        default="default.json"
+        "command", action="store", help="What should the ExoCat do?", metavar="command",
+        choices=["new", "index", "update", "search", "move", "study"]
     )
     parser.add_argument(
-        "-s", "--statistics",
-        dest="statistics",
-        action="store", 
-        help="set destination for statistics", 
-        default="statistics"
+        "-t", "--title", help="The title of the card",
+        default="None"
     )
     args = parser.parse_args()
-    if not op.exists(args.statistics):
-        os.makedirs(args.statistics)
-    
-    with open(args.config, "r") as ih:
-        config = json.load(ih)
+    cat = ExoCat()
+    if args.command == "new" or args.command == "n":
+        cat.new(args.title)
