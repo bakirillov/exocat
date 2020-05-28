@@ -1,4 +1,6 @@
 # ID: TITLE
+
+## Contents
 CONTENTS_OF_THE_CARD
 'no more than 5 sentences, short description of an idea'
 'Use [[]] to link two cards together'
