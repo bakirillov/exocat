@@ -2,9 +2,12 @@ import os
 import json
 import time
 import argparse
+from index import *
+import pickle as pkl
 import os.path as op
 from tqdm import tqdm
 from datetime import datetime
+
 
 THECAT = """ _._     _,-'""`-._
 (,-.`._,'(       |\`-/|
@@ -52,8 +55,16 @@ class ExoCat():
         title = old.split("\n")[0].replace("# ", "").split(": ")[-1]
         self.new(title, False, old = [cid])
         
-    def index(self):
-        pass
+    def index(self, cid):
+        index_path = op.join(self.config["folder"], "index.pkl")
+        with open(index_path, "rb") as ih:
+            I = pkl.load(ih)
+        all_cards = list(
+            sorted([a for a in os.walk(self.config["folder"])], key=int)
+        )
+        cid_id = all_cards.index(cid+".md")
+        all_cards = all_cards[cid_id:]
+        #indexable = [ExoCat.retrieve(op.join(self.config["folder"], x)) for x in all_cards]
     
     def edit(self, cid):
         if cid == "None":
@@ -74,9 +85,14 @@ def update_card(args):
     cat = ExoCat()
     cat.update(args.card_id)
 
+def index_cards(args):
+    print("UNIMPLEMENTED")
+    #cat = ExoCat()
+    #cat.index(args.card_id)
+    
     
 if __name__ == "__main__":
-    print(THECAT)
+    print(THECAT) #new edit update index study search neighborhood 
     parser = argparse.ArgumentParser(description="A personal CLI exocortex assistant")
     subparsers = parser.add_subparsers()
     parser_new = subparsers.add_parser("new", help="Make a new card")
@@ -103,5 +119,13 @@ if __name__ == "__main__":
         default="None"
     )
     parser_update.set_defaults(func=update_card)
+    parser_update = subparsers.add_parser(
+        "index", help="Index existing cards"
+    )
+    parser_update.add_argument(
+        "-c", "--card-id", help="The id of the card to start index from",
+        default="None"
+    )
+    parser_update.set_defaults(func=index_cards)
     args = parser.parse_args()
     args.func(args)
