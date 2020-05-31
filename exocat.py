@@ -23,6 +23,16 @@ class ExoCat():
             self.template = ih.read()
         with open("config.json", "r") as ih:
             self.config = json.loads(ih.read())
+            
+    def cards(self):
+        files = list(
+            filter(
+                lambda x: x != "index.pkl", 
+                [a for a in os.walk(self.config["folder"])][0][2]
+            )
+        )
+        files = [op.join(self.config["folder"], a) for a in files]
+        return(files)
         
     def new(self, title, study_mode, old=[]):
         cid = datetime.now().strftime("%d%m%Y%H%M%S")
@@ -57,20 +67,41 @@ class ExoCat():
         
     def index(self, cid):
         index_path = op.join(self.config["folder"], "index.pkl")
-        with open(index_path, "rb") as ih:
-            I = pkl.load(ih)
-        all_cards = list(
-            sorted([a for a in os.walk(self.config["folder"])], key=int)
-        )
-        cid_id = all_cards.index(cid+".md")
-        all_cards = all_cards[cid_id:]
-        #indexable = [ExoCat.retrieve(op.join(self.config["folder"], x)) for x in all_cards]
+        if op.exists(index_path):
+            with open(index_path, "rb") as ih:
+                I = pkl.load(ih)
+        else:
+            I = CatIndex.empty()
+        if cid == "renew":
+            I.last = "None"
+        elif cid != "None":
+            I.last = cid
+        files = I.cards()
+        I.index(files)
+        I.save(index_path)
     
     def edit(self, cid):
         if cid == "None":
             cid = input("Enter the id of the card to edit: ")
         path = op.join(self.config["folder"], cid+".md")
         os.system(self.config["editor"]+" "+path)
+        
+    def query(self, regex, section="full"):
+        files = self.cards()
+        texts = []
+        for i,a in tqdm(list(enumerate(files))):
+            with open(a) as oh:
+                texts.append((i, oh.read()))
+        if section == "title":
+            texts = [(a[0], a[1].split("\n")[0]) for a in texts]
+        filtered = list(filter(lambda x: re.search(regex, x[1]), texts))
+        filtered = [op.split(b)[-1].replace(".md", "") for b in [files[a[0]] for a in filtered]]
+        print("\n")
+        if len(filtered) > 0:
+            for a in filtered:
+                print(a)
+        else:
+            print("Not found")
         
         
 def new_card(args):
@@ -86,9 +117,15 @@ def update_card(args):
     cat.update(args.card_id)
 
 def index_cards(args):
-    print("UNIMPLEMENTED")
-    #cat = ExoCat()
-    #cat.index(args.card_id)
+    cat = ExoCat()
+    cat.index(args.card_id)
+    
+def query_cards(args):
+    cat = ExoCat()
+    if args.title != "None":
+        cat.query(args.title, section="title")
+    elif args.full != "None":
+        cat.query(args.full)
     
     
 if __name__ == "__main__":
@@ -119,13 +156,25 @@ if __name__ == "__main__":
         default="None"
     )
     parser_update.set_defaults(func=update_card)
-    parser_update = subparsers.add_parser(
+    parser_index = subparsers.add_parser(
         "index", help="Index existing cards"
     )
-    parser_update.add_argument(
+    parser_index.add_argument(
         "-c", "--card-id", help="The id of the card to start index from",
         default="None"
     )
-    parser_update.set_defaults(func=index_cards)
+    parser_index.set_defaults(func=index_cards)
+    parser_query = subparsers.add_parser(
+        "query", help="Query the exocortex"
+    )
+    parser_query.add_argument(
+        "-t", "--title", help="The regular expression for title",
+        default="None"
+    )
+    parser_query.add_argument(
+        "-f", "--full", help="The regular expression for full-text search",
+        default="None"
+    )
+    parser_query.set_defaults(func=query_cards)
     args = parser.parse_args()
     args.func(args)
