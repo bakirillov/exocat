@@ -79,12 +79,37 @@ class ExoCat():
         files = I.cards()
         I.index(files)
         I.save(index_path)
+        
+    def links(self, cid, link_type):
+        index_path = op.join(self.config["folder"], "index.pkl")
+        if op.exists(index_path):
+            with open(index_path, "rb") as ih:
+                I = pkl.load(ih)
+            edges = sum([list(a) for a in I.g.edges([cid])], [])
+            sg = I.g.subgraph(edges)
+            if link_type != "all":
+                print(nx.get_edge_attributes(sg, link_type))
+            else:
+                print(nx.get_edge_attributes(sg, "explicits"))
+                print(nx.get_edge_attributes(sg, "implicits"))
+                print(nx.get_edge_attributes(sg, "source"))
+                print(nx.get_edge_attributes(sg, "timeline"))
+        else:
+            print("The index is empty")
+        
     
     def edit(self, cid):
         if cid == "None":
             cid = input("Enter the id of the card to edit: ")
         path = op.join(self.config["folder"], cid+".md")
         os.system(self.config["editor"]+" "+path)
+        
+    def view(self, cid):
+        if cid == "None":
+            cid = input("Enter the id of the card to view: ")
+        path = op.join(self.config["folder"], cid+".md")
+        command = self.config["viewer"]+" "+path
+        os.system(command)
         
     def query(self, regex, section="full"):
         files = self.cards()
@@ -95,7 +120,7 @@ class ExoCat():
         if section == "title":
             texts = [(a[0], a[1].split("\n")[0]) for a in texts]
         filtered = list(filter(lambda x: re.search(regex, x[1]), texts))
-        filtered = [op.split(b)[-1].replace(".md", "") for b in [files[a[0]] for a in filtered]]
+        filtered = [a[1].split("\n")[0] for a in filtered]
         print("\n")
         if len(filtered) > 0:
             for a in filtered:
@@ -107,6 +132,10 @@ class ExoCat():
 def new_card(args):
     cat = ExoCat()
     cat.new(args.title, args.study)
+    
+def view_card(args):
+    cat = ExoCat()
+    cat.view(args.card_id)
     
 def edit_card(args):
     cat = ExoCat()
@@ -126,6 +155,10 @@ def query_cards(args):
         cat.query(args.title, section="title")
     elif args.full != "None":
         cat.query(args.full)
+        
+def links_cards(args):
+    cat = ExoCat()
+    cat.links(args.card_id, args.type)
     
     
 if __name__ == "__main__":
@@ -148,6 +181,12 @@ if __name__ == "__main__":
         default="None"
     )
     parser_edit.set_defaults(func=edit_card)
+    parser_view = subparsers.add_parser("view", help="View an existing card")
+    parser_view.add_argument(
+        "-c", "--card-id", help="The id of the card to view",
+        default="None"
+    )
+    parser_view.set_defaults(func=view_card)
     parser_update = subparsers.add_parser(
         "update", help="Update an old card with additional information"
     )
@@ -176,5 +215,17 @@ if __name__ == "__main__":
         default="None"
     )
     parser_query.set_defaults(func=query_cards)
+    parser_links = subparsers.add_parser(
+        "links", help="Query the index for links"
+    )
+    parser_links.add_argument(
+        "-c", "--card-id", help="The id of the card to show the links",
+        default="None"
+    )
+    parser_links.add_argument(
+        "-t", "--type", help="The link type",
+        default="all", choices=["all", "explicit", "implicit", "source", "timeline"] 
+    )
+    parser_links.set_defaults(func=links_cards)
     args = parser.parse_args()
     args.func(args)
