@@ -116,7 +116,7 @@ class ExoCat():
         texts = []
         for i,a in tqdm(list(enumerate(files))):
             with open(a) as oh:
-                texts.append((i, oh.read()))
+                texts.append((i, oh.read().lower()))
         if section == "title":
             texts = [(a[0], a[1].split("\n")[0]) for a in texts]
         filtered = list(filter(lambda x: re.search(regex, x[1]), texts))

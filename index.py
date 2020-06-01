@@ -49,7 +49,7 @@ class CatIndex():
             lst = lst[lst.index(self.last):]
         for a in tqdm(list_of_files):
             with open(a, "r") as ih:
-                a_file = ih.read()
+                a_file = ih.read().lower()
             a_linkables = CatIndex.examine(a_file)
             a_cid = op.split(a)[-1].replace(".md", "")
             for b in lst:
