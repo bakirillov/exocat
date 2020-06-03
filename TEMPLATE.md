@@ -15,11 +15,6 @@ COMMENTS_FOR_THE_CARD
 'Comments about the contents of the card'   
 'Form additional link between two cards'   
 
-## Method
-COMMENTS_FOR_THE_METHOD_OF_SEARCH    
-'Comments about the method of card introduction'    
-'Forms additional link between two cards'    
-
 ## Study
 ### Questions
 * Write questions as follows    

@@ -30,7 +30,7 @@ class CatIndex():
     @staticmethod
     def examine(s):
         explicits = re.findall("\[\[\w+\]\]", s)
-        explicits = [a.replace("[[", "").replace("]]", "") for a in explicits]
+        explicits = [a.replace("[[", "").replace("]]", "").lower() for a in explicits]
         s = {
             "explicits": explicits
         }

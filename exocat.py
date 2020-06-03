@@ -76,7 +76,7 @@ class ExoCat():
             I.last = "None"
         elif cid != "None":
             I.last = cid
-        files = I.cards()
+        files = self.cards()
         I.index(files)
         I.save(index_path)
         
