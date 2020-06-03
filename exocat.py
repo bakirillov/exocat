@@ -96,7 +96,44 @@ class ExoCat():
                 print(nx.get_edge_attributes(sg, "timeline"))
         else:
             print("The index is empty")
-        
+    
+    def overview(self, use_implicits=False, open_output=True):
+        index_path = op.join(self.config["folder"], "index.pkl")
+        tempdir = "/tmp/exocat/"
+        if not op.exists(tempdir):
+            os.makedirs(tempdir)
+        fn = op.join(tempdir, datetime.now().strftime("%d%m%Y%H%M%S")+".txt")
+        if op.exists(index_path):
+            with open(index_path, "rb") as ih:
+                I = pkl.load(ih)
+            explicits = nx.get_edge_attributes(I.g, "explicits")
+            with open(fn, "w") as oh:
+                for a in explicits:
+                    oh.write(">\n")
+                    oh.write(explicits[a]+"\n")
+                    a_fn = op.join(self.config["folder"], a[0]+".md")
+                    with open(a_fn, "r") as ih:
+                        a_title = ih.read().lower().split("\n")[0]
+                    b_fn = op.join(self.config["folder"], a[1]+".md")
+                    with open(b_fn, "r") as ih:
+                        b_title = ih.read().lower().split("\n")[0]
+                    oh.write(a_title+"\n")
+                    oh.write(b_title+"\n")
+                if use_implicits:
+                    for a in implicits:
+                        a_fn = op.join(self.config["folder"], a[0]+".md")
+                        with open(a_fn, "r") as ih:
+                            a_title = ih.read().lower().split("\n")[0]
+                        b_fn = op.join(self.config["folder"], a[1]+".md")
+                        with open(b_fn, "r") as ih:
+                            b_title = ih.read().lower().split("\n")[0]
+                        oh.write(a_title+"\n")
+                        oh.write(b_title+"\n")
+            print(fn)
+            if open_output:
+                os.system(self.config["editor"]+" "+fn)
+        else:
+            print("The index is empty")
     
     def edit(self, cid):
         if cid == "None":
@@ -160,11 +197,26 @@ def links_cards(args):
     cat = ExoCat()
     cat.links(args.card_id, args.type)
     
+def overview(args):
+    cat = ExoCat()
+    cat.overview(args.implicits, args.open)
     
 if __name__ == "__main__":
     print(THECAT) #new edit update index study search neighborhood 
     parser = argparse.ArgumentParser(description="A personal CLI exocortex assistant")
     subparsers = parser.add_subparsers()
+    parser_overview = subparsers.add_parser(
+        "overview", help="Give an overview of the included topics"
+    )
+    parser_overview.add_argument(
+        "-i", "--implicits", help="Use implicit links",
+        action="store_true", default=False
+    )
+    parser_overview.add_argument(
+        "-o", "--open", help="Open the overview in editor",
+        action="store_true", default=True
+    )
+    parser_overview.set_defaults(func=overview)
     parser_new = subparsers.add_parser("new", help="Make a new card")
     parser_new.add_argument(
         "-t", "--title", help="The title of the card",
