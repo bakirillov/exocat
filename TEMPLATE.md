@@ -2,8 +2,8 @@
 
 ## Contents
 CONTENTS_OF_THE_CARD    
-'no more than 5 sentences, short description of an idea'    
-'Use [[]] to link two cards together'    
+'A long and thorough description of an idea'    
+'Use [[]] to link two cards together with an explicit link through a term'    
 
 ## Source
 SOURCE_OF_THE_CARD   
@@ -13,7 +13,7 @@ SOURCE_OF_THE_CARD
 ## Comments
 COMMENTS_FOR_THE_CARD   
 'Comments about the contents of the card'   
-'Form additional link between two cards'   
+'Forms additional link between two cards'   
 
 ## Study
 ### Questions
