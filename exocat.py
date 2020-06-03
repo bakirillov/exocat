@@ -148,7 +148,7 @@ class ExoCat():
         command = self.config["viewer"]+" "+path
         os.system(command)
         
-    def query(self, regex, section="full"):
+    def query(self, regex, section="full", open_newest=True):
         files = self.cards()
         texts = []
         for i,a in tqdm(list(enumerate(files))):
@@ -158,10 +158,17 @@ class ExoCat():
             texts = [(a[0], a[1].split("\n")[0]) for a in texts]
         filtered = list(filter(lambda x: re.search(regex, x[1]), texts))
         filtered = [a[1].split("\n")[0] for a in filtered]
+        filtered = list(sorted(filtered, key=lambda x: int(x.split(" ")[1][:-1])))
         print("\n")
         if len(filtered) > 0:
             for a in filtered:
                 print(a)
+            if open_newest:
+                cfn = op.join(
+                    self.config["folder"], filtered[-1].split(" ")[1][:-1]+".md"
+                )
+                print(cfn)
+                os.system(self.config["editor"]+" "+cfn)
         else:
             print("Not found")
         
@@ -189,9 +196,9 @@ def index_cards(args):
 def query_cards(args):
     cat = ExoCat()
     if args.title != "None":
-        cat.query(args.title, section="title")
+        cat.query(args.title, section="title", open_newest=args.open)
     elif args.full != "None":
-        cat.query(args.full)
+        cat.query(args.full, open_newest=args.open)
         
 def links_cards(args):
     cat = ExoCat()
@@ -265,6 +272,10 @@ if __name__ == "__main__":
     parser_query.add_argument(
         "-f", "--full", help="The regular expression for full-text search",
         default="None"
+    )
+    parser_query.add_argument(
+        "-o", "--open", help="Open the newest suitable file",
+        action="store_true", default=False
     )
     parser_query.set_defaults(func=query_cards)
     parser_links = subparsers.add_parser(
