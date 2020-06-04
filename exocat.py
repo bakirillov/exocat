@@ -104,7 +104,17 @@ class ExoCat():
         oh.write(a_title+"\n")
         oh.write(b_title+"\n")
         
-    def links(self, cid, link_type):
+    def filter_links(self, links, regex):
+        links = {",".join(a): links[a] for a in links}
+        if regex:       
+            es = {}
+            for a in links:
+                if re.search(regex, links[a]):
+                    es[a] = links[a]
+            links = es
+        return(links)
+        
+    def links(self, cid, link_type, regex=None):
         index_path = op.join(self.config["folder"], "index.pkl")
         fn = self.make_tempfile()
         if op.exists(index_path):
@@ -117,8 +127,7 @@ class ExoCat():
                 if link_type == "all":
                     link_types = ["explicits", "implicits", "source", "timeline"]
                 for lt in link_types:
-                    eas = nx.get_edge_attributes(sg, lt)
-                    eas = {",".join(a): eas[a] for a in eas}
+                    eas = self.filter_links(nx.get_edge_attributes(sg, lt), regex)
                     for a in eas:
                         self.write_down(
                             oh, a.split(",")[0], a.split(",")[1], eas[a]
@@ -135,13 +144,9 @@ class ExoCat():
             with open(index_path, "rb") as ih:
                 I = pkl.load(ih)
             explicits = nx.get_edge_attributes(I.g, "explicits")
-            explicits = {",".join(a): explicits[a] for a in explicits}
-            if regex:
-                es = {}
-                for a in explicits:
-                    if re.search(regex, explicits[a]):
-                        es[a] = explicits[a]
-                explicits = es
+            explicits = self.filter_links(
+                nx.get_edge_attributes(I.g, "explicits"), regex
+            )
             implicits = []
             with open(fn, "w") as oh:
                 for a in explicits:
@@ -227,7 +232,7 @@ def query_cards(args):
         
 def links_cards(args):
     cat = ExoCat()
-    cat.links(args.card_id, args.type)
+    cat.links(args.card_id, args.type, args.regex)
     
 def overview(args):
     cat = ExoCat()
@@ -318,6 +323,10 @@ if __name__ == "__main__":
     parser_links.add_argument(
         "-t", "--type", help="The link type",
         default="all", choices=["all", "explicits", "implicits", "source", "timeline"] 
+    )
+    parser_links.add_argument(
+        "-r", "--regex", help="Filter the links by regex",
+        action="store", default=None
     )
     parser_links.set_defaults(func=links_cards)
     args = parser.parse_args()
