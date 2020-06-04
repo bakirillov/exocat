@@ -73,13 +73,6 @@ class ExoCat():
         with open(path, "w") as oh:
             oh.write(tmpl)
         self.run_program(path, "editor")
-    
-    def update(self, cid):
-        if not cid:
-            cid = input("Enter the id of the card to edit: ")
-        old = self.load_card(cid)
-        title = old.split("\n")[0].replace("# ", "").split(": ")[-1]
-        self.new(title, False, old = [cid])
         
     def index(self, cid):
         index_path = op.join(self.config["folder"], "index.pkl")
@@ -137,36 +130,32 @@ class ExoCat():
         else:
             print("The index is empty")
     
-    def overview(self, use_implicits=False, open_output=True, regex=None):
+    def overview(self, regex=None):
         index_path = op.join(self.config["folder"], "index.pkl")
         fn = self.make_tempfile()
         if op.exists(index_path):
             with open(index_path, "rb") as ih:
                 I = pkl.load(ih)
-            explicits = nx.get_edge_attributes(I.g, "explicits")
             explicits = self.filter_links(
                 nx.get_edge_attributes(I.g, "explicits"), regex
             )
-            implicits = []
+            implicits = self.filter_links(
+                nx.get_edge_attributes(I.g, "implicits"), regex
+            )
+            source = self.filter_links(
+                nx.get_edge_attributes(I.g, "source"), regex
+            )
+            timeline = self.filter_links(
+                nx.get_edge_attributes(I.g, "timeline"), regex
+            )
             with open(fn, "w") as oh:
-                for a in explicits:
-                    oh.write(">\n")
-                    oh.write(explicits[a]+"\n")
-                    a_title = self.load_card(a.split(",")[0]).split("\n")[0]
-                    b_title = self.load_card(a.split(",")[1]).split("\n")[0]
-                    oh.write(a_title+"\n")
-                    oh.write(b_title+"\n")
-                if use_implicits:
-                    for a in implicits:
-                        oh.write(">\n")
-                        oh.write(implicits[a]+"\n")
-                        a_title = self.load_card(a.split(",")[0]).split("\n")[0]
-                        b_title = self.load_card(a.split(",")[1]).split("\n")[0]
-                        oh.write(a_title+"\n")
-                        oh.write(b_title+"\n")
+                for what in [explicits, implicits, source, timeline]:
+                    for a in what:
+                        self.write_down(
+                            oh, a.split(",")[0], a.split(",")[1], what[a]
+                        )
             print(fn)
-            if open_output:
-                self.run_program(fn, "editor")
+            self.run_program(fn, "editor")
         else:
             print("The index is empty")
     
@@ -214,10 +203,6 @@ def view_card(args):
 def edit_card(args):
     cat = ExoCat()
     cat.edit(args.card_id)
-    
-def update_card(args):
-    cat = ExoCat()
-    cat.update(args.card_id)
 
 def index_cards(args):
     cat = ExoCat()
@@ -236,7 +221,7 @@ def links_cards(args):
     
 def overview(args):
     cat = ExoCat()
-    cat.overview(args.implicits, args.open, args.regex)
+    cat.overview(args.regex)
 
 
 if __name__ == "__main__":
@@ -245,14 +230,6 @@ if __name__ == "__main__":
     subparsers = parser.add_subparsers()
     parser_overview = subparsers.add_parser(
         "overview", help="Give an overview of the included topics"
-    )
-    parser_overview.add_argument(
-        "-i", "--implicits", help="Use implicit links",
-        action="store_true", default=False
-    )
-    parser_overview.add_argument(
-        "-o", "--open", help="Open the overview in editor",
-        action="store_true", default=True
     )
     parser_overview.add_argument(
         "-r", "--regex", help="Filter the links by regex",
@@ -281,14 +258,6 @@ if __name__ == "__main__":
         default=None
     )
     parser_view.set_defaults(func=view_card)
-    parser_update = subparsers.add_parser(
-        "update", help="Update an old card with additional information"
-    )
-    parser_update.add_argument(
-        "-c", "--card-id", help="The id of the card to edit",
-        default=None
-    )
-    parser_update.set_defaults(func=update_card)
     parser_index = subparsers.add_parser(
         "index", help="Index existing cards"
     )
