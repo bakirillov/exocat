@@ -97,7 +97,7 @@ class ExoCat():
         else:
             print("The index is empty")
     
-    def overview(self, use_implicits=False, open_output=True):
+    def overview(self, use_implicits=False, open_output=True, regex="None"):
         index_path = op.join(self.config["folder"], "index.pkl")
         tempdir = "/tmp/exocat/"
         if not op.exists(tempdir):
@@ -107,14 +107,22 @@ class ExoCat():
             with open(index_path, "rb") as ih:
                 I = pkl.load(ih)
             explicits = nx.get_edge_attributes(I.g, "explicits")
+            explicits = {",".join(a): explicits[a] for a in explicits}
+            if regex != "None":
+                es = {}
+                for a in explicits:
+                    if re.search(regex, explicits[a]):
+                        es[a] = explicits[a]
+                explicits = es
+            implicits = []
             with open(fn, "w") as oh:
                 for a in explicits:
                     oh.write(">\n")
                     oh.write(explicits[a]+"\n")
-                    a_fn = op.join(self.config["folder"], a[0]+".md")
+                    a_fn = op.join(self.config["folder"], a.split(",")[0]+".md")
                     with open(a_fn, "r") as ih:
                         a_title = ih.read().lower().split("\n")[0]
-                    b_fn = op.join(self.config["folder"], a[1]+".md")
+                    b_fn = op.join(self.config["folder"], a.split(",")[1]+".md")
                     with open(b_fn, "r") as ih:
                         b_title = ih.read().lower().split("\n")[0]
                     oh.write(a_title+"\n")
@@ -206,7 +214,7 @@ def links_cards(args):
     
 def overview(args):
     cat = ExoCat()
-    cat.overview(args.implicits, args.open)
+    cat.overview(args.implicits, args.open, args.regex)
     
 if __name__ == "__main__":
     print(THECAT) #new edit update index study search neighborhood 
@@ -222,6 +230,10 @@ if __name__ == "__main__":
     parser_overview.add_argument(
         "-o", "--open", help="Open the overview in editor",
         action="store_true", default=True
+    )
+    parser_overview.add_argument(
+        "-r", "--regex", help="Filter the links by regex",
+        action="store", default="None"
     )
     parser_overview.set_defaults(func=overview)
     parser_new = subparsers.add_parser("new", help="Make a new card")
