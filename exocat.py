@@ -45,6 +45,13 @@ class ExoCat():
     def run_program(self, path, program):
         os.system(self.config[program]+" "+path)
         
+    def make_tempfile(self):
+        tempdir = "/tmp/exocat/"
+        if not op.exists(tempdir):
+            os.makedirs(tempdir)
+        fn = op.join(tempdir, datetime.now().strftime("%d%m%Y%H%M%S")+".txt")
+        return(fn)
+        
     def new(self, title, study_mode, old=[]):
         cid = datetime.now().strftime("%d%m%Y%H%M%S")
         if not op.exists(self.config["folder"]):
@@ -89,29 +96,41 @@ class ExoCat():
         I.index(files)
         I.save(index_path)
         
+    def write_down(self, oh, a, b, d):
+        oh.write(">\n")
+        oh.write(d+"\n")
+        a_title = self.load_card(a).split("\n")[0]
+        b_title = self.load_card(a).split("\n")[0]
+        oh.write(a_title+"\n")
+        oh.write(b_title+"\n")
+        
     def links(self, cid, link_type):
         index_path = op.join(self.config["folder"], "index.pkl")
+        fn = self.make_tempfile()
         if op.exists(index_path):
             with open(index_path, "rb") as ih:
                 I = pkl.load(ih)
             edges = sum([list(a) for a in I.g.edges([cid])], [])
             sg = I.g.subgraph(edges)
-            if link_type != "all":
-                print(nx.get_edge_attributes(sg, link_type))
-            else:
-                print(nx.get_edge_attributes(sg, "explicits"))
-                print(nx.get_edge_attributes(sg, "implicits"))
-                print(nx.get_edge_attributes(sg, "source"))
-                print(nx.get_edge_attributes(sg, "timeline"))
+            with open(fn, "w") as oh:
+                link_types = [link_type]
+                if link_type == "all":
+                    link_types = ["explicits", "implicits", "source", "timeline"]
+                for lt in link_types:
+                    eas = nx.get_edge_attributes(sg, lt)
+                    eas = {",".join(a): eas[a] for a in eas}
+                    for a in eas:
+                        self.write_down(
+                            oh, a.split(",")[0], a.split(",")[1], eas[a]
+                        )
+            print(fn)
+            self.run_program(fn, "editor")
         else:
             print("The index is empty")
     
     def overview(self, use_implicits=False, open_output=True, regex=None):
         index_path = op.join(self.config["folder"], "index.pkl")
-        tempdir = "/tmp/exocat/"
-        if not op.exists(tempdir):
-            os.makedirs(tempdir)
-        fn = op.join(tempdir, datetime.now().strftime("%d%m%Y%H%M%S")+".txt")
+        fn = self.make_tempfile()
         if op.exists(index_path):
             with open(index_path, "rb") as ih:
                 I = pkl.load(ih)
@@ -298,7 +317,7 @@ if __name__ == "__main__":
     )
     parser_links.add_argument(
         "-t", "--type", help="The link type",
-        default="all", choices=["all", "explicit", "implicit", "source", "timeline"] 
+        default="all", choices=["all", "explicits", "implicits", "source", "timeline"] 
     )
     parser_links.set_defaults(func=links_cards)
     args = parser.parse_args()
