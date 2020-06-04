@@ -33,14 +33,25 @@ class ExoCat():
         )
         files = [op.join(self.config["folder"], a) for a in files]
         return(files)
+    
+    def load_card(self, cid, contents=True):
+        path = op.join(self.config["folder"], cid+".md")
+        if contents:
+            with open(path, "r") as ih:
+                return(ih.read().lower())
+        else:
+            return(path)
+        
+    def run_program(self, path, program):
+        os.system(self.config[program]+" "+path)
         
     def new(self, title, study_mode, old=[]):
         cid = datetime.now().strftime("%d%m%Y%H%M%S")
         if not op.exists(self.config["folder"]):
             os.makedirs(self.config["folder"])
-        path = op.join(self.config["folder"], cid+".md")
+        path = self.load_card(cid, False)
         tmpl = self.template.replace("ID", cid)
-        if title == "None":
+        if not title:
             title = input("Enter the title of the card: ")
         tmpl = tmpl.replace("TITLE", title)
         spl = tmpl.split("\n")
@@ -54,14 +65,12 @@ class ExoCat():
             tmpl += "\n"+"\n".join(old)
         with open(path, "w") as oh:
             oh.write(tmpl)
-        os.system(self.config["editor"]+" "+path)
+        self.run_program(path, "editor")
     
     def update(self, cid):
-        if cid == "None":
+        if not cid:
             cid = input("Enter the id of the card to edit: ")
-        path = op.join(self.config["folder"], cid+".md")
-        with open(path, "r") as ih:
-            old = ih.read()
+        old = self.load_card(cid)
         title = old.split("\n")[0].replace("# ", "").split(": ")[-1]
         self.new(title, False, old = [cid])
         
@@ -73,8 +82,8 @@ class ExoCat():
         else:
             I = CatIndex.empty()
         if cid == "renew":
-            I.last = "None"
-        elif cid != "None":
+            I.last = None
+        elif cid:
             I.last = cid
         files = self.cards()
         I.index(files)
@@ -97,7 +106,7 @@ class ExoCat():
         else:
             print("The index is empty")
     
-    def overview(self, use_implicits=False, open_output=True, regex="None"):
+    def overview(self, use_implicits=False, open_output=True, regex=None):
         index_path = op.join(self.config["folder"], "index.pkl")
         tempdir = "/tmp/exocat/"
         if not op.exists(tempdir):
@@ -108,7 +117,7 @@ class ExoCat():
                 I = pkl.load(ih)
             explicits = nx.get_edge_attributes(I.g, "explicits")
             explicits = {",".join(a): explicits[a] for a in explicits}
-            if regex != "None":
+            if regex:
                 es = {}
                 for a in explicits:
                     if re.search(regex, explicits[a]):
@@ -119,42 +128,33 @@ class ExoCat():
                 for a in explicits:
                     oh.write(">\n")
                     oh.write(explicits[a]+"\n")
-                    a_fn = op.join(self.config["folder"], a.split(",")[0]+".md")
-                    with open(a_fn, "r") as ih:
-                        a_title = ih.read().lower().split("\n")[0]
-                    b_fn = op.join(self.config["folder"], a.split(",")[1]+".md")
-                    with open(b_fn, "r") as ih:
-                        b_title = ih.read().lower().split("\n")[0]
+                    a_title = self.load_card(a.split(",")[0]).split("\n")[0]
+                    b_title = self.load_card(a.split(",")[1]).split("\n")[0]
                     oh.write(a_title+"\n")
                     oh.write(b_title+"\n")
                 if use_implicits:
                     for a in implicits:
-                        a_fn = op.join(self.config["folder"], a[0]+".md")
-                        with open(a_fn, "r") as ih:
-                            a_title = ih.read().lower().split("\n")[0]
-                        b_fn = op.join(self.config["folder"], a[1]+".md")
-                        with open(b_fn, "r") as ih:
-                            b_title = ih.read().lower().split("\n")[0]
+                        oh.write(">\n")
+                        oh.write(implicits[a]+"\n")
+                        a_title = self.load_card(a.split(",")[0]).split("\n")[0]
+                        b_title = self.load_card(a.split(",")[1]).split("\n")[0]
                         oh.write(a_title+"\n")
                         oh.write(b_title+"\n")
             print(fn)
             if open_output:
-                os.system(self.config["editor"]+" "+fn)
+                self.run_program(fn, "editor")
         else:
             print("The index is empty")
     
     def edit(self, cid):
-        if cid == "None":
+        if not cid:
             cid = input("Enter the id of the card to edit: ")
-        path = op.join(self.config["folder"], cid+".md")
-        os.system(self.config["editor"]+" "+path)
+        self.run_program(self.load_card(cid, False), "editor")
         
     def view(self, cid):
-        if cid == "None":
+        if not cid:
             cid = input("Enter the id of the card to view: ")
-        path = op.join(self.config["folder"], cid+".md")
-        command = self.config["viewer"]+" "+path
-        os.system(command)
+        self.run_program(self.load_card(cid, False), "viewer")
         
     def query(self, regex, section="full", open_newest=True):
         files = self.cards()
@@ -172,11 +172,9 @@ class ExoCat():
             for a in filtered:
                 print(a)
             if open_newest:
-                cfn = op.join(
-                    self.config["folder"], filtered[-1].split(" ")[1][:-1]+".md"
+                self.run_program(
+                    self.load_card(filtered[-1].split(" ")[1][:-1], False), "editor"
                 )
-                print(cfn)
-                os.system(self.config["editor"]+" "+cfn)
         else:
             print("Not found")
         
@@ -203,9 +201,9 @@ def index_cards(args):
     
 def query_cards(args):
     cat = ExoCat()
-    if args.title != "None":
+    if args.title:
         cat.query(args.title, section="title", open_newest=args.open)
-    elif args.full != "None":
+    elif args.full:
         cat.query(args.full, open_newest=args.open)
         
 def links_cards(args):
@@ -215,9 +213,10 @@ def links_cards(args):
 def overview(args):
     cat = ExoCat()
     cat.overview(args.implicits, args.open, args.regex)
-    
+
+
 if __name__ == "__main__":
-    print(THECAT) #new edit update index study search neighborhood 
+    print(THECAT)
     parser = argparse.ArgumentParser(description="A personal CLI exocortex assistant")
     subparsers = parser.add_subparsers()
     parser_overview = subparsers.add_parser(
@@ -233,13 +232,13 @@ if __name__ == "__main__":
     )
     parser_overview.add_argument(
         "-r", "--regex", help="Filter the links by regex",
-        action="store", default="None"
+        action="store", default=None
     )
     parser_overview.set_defaults(func=overview)
     parser_new = subparsers.add_parser("new", help="Make a new card")
     parser_new.add_argument(
         "-t", "--title", help="The title of the card",
-        default="None"
+        default=None
     )
     parser_new.add_argument(
         "-s", "--study", help="Create the card in study mode",
@@ -249,13 +248,13 @@ if __name__ == "__main__":
     parser_edit = subparsers.add_parser("edit", help="Edit an old card")
     parser_edit.add_argument(
         "-c", "--card-id", help="The id of the card to edit",
-        default="None"
+        default=None
     )
     parser_edit.set_defaults(func=edit_card)
     parser_view = subparsers.add_parser("view", help="View an existing card")
     parser_view.add_argument(
         "-c", "--card-id", help="The id of the card to view",
-        default="None"
+        default=None
     )
     parser_view.set_defaults(func=view_card)
     parser_update = subparsers.add_parser(
@@ -263,7 +262,7 @@ if __name__ == "__main__":
     )
     parser_update.add_argument(
         "-c", "--card-id", help="The id of the card to edit",
-        default="None"
+        default=None
     )
     parser_update.set_defaults(func=update_card)
     parser_index = subparsers.add_parser(
@@ -271,7 +270,7 @@ if __name__ == "__main__":
     )
     parser_index.add_argument(
         "-c", "--card-id", help="The id of the card to start index from",
-        default="None"
+        default=None
     )
     parser_index.set_defaults(func=index_cards)
     parser_query = subparsers.add_parser(
@@ -279,11 +278,11 @@ if __name__ == "__main__":
     )
     parser_query.add_argument(
         "-t", "--title", help="The regular expression for title",
-        default="None"
+        default=None
     )
     parser_query.add_argument(
         "-f", "--full", help="The regular expression for full-text search",
-        default="None"
+        default=None
     )
     parser_query.add_argument(
         "-o", "--open", help="Open the newest suitable file",
@@ -295,7 +294,7 @@ if __name__ == "__main__":
     )
     parser_links.add_argument(
         "-c", "--card-id", help="The id of the card to show the links",
-        default="None"
+        default=None
     )
     parser_links.add_argument(
         "-t", "--type", help="The link type",

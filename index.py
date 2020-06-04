@@ -15,7 +15,7 @@ class CatIndex():
     @classmethod
     def empty(C):
         g = nx.Graph()
-        last = "None"
+        last = None
         return(C(g, last))
     
     @staticmethod
@@ -45,7 +45,7 @@ class CatIndex():
             deepcopy(list_of_files), 
             key=lambda x: int(op.split(x)[-1].replace(".md", ""))
         )
-        if self.last != "None":
+        if self.last:
             lst = lst[lst.index(self.last):]
         for a in tqdm(list_of_files):
             with open(a, "r") as ih:
