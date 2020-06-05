@@ -1,5 +1,9 @@
 # ID: TITLE
 
+## Description
+DESCRIPTION_OF_THE_CART
+'no more than 5 sentences, short description of an idea'
+
 ## Contents
 CONTENTS_OF_THE_CARD    
 'A long and thorough description of an idea'    

@@ -2,10 +2,13 @@ import os
 import json
 import time
 import argparse
+import numpy as np
 from index import *
+import pandas as pd
 import pickle as pkl
 import os.path as op
 from tqdm import tqdm
+from leitner import *
 from datetime import datetime
 
 
@@ -15,7 +18,7 @@ THECAT = """ _._     _,-'""`-._
           `-    \`_`"'-
 """
 
-
+                
 class ExoCat():
     
     def __init__(self):
@@ -223,6 +226,26 @@ def overview(args):
     cat = ExoCat()
     cat.overview(args.regex)
 
+def study_cards(args):
+    cat = ExoCat()
+    box_fn = op.join(cat.config["folder"], "box.pkl")
+    if not op.exists(box_fn):
+        lb = LeitnerBox.empty()
+        lb.index(cat.cards())
+    else:
+        lb = LeitnerBox.load(box_fn)
+    if args.reindex:
+        lb.index(cat.cards())
+    lb.study()
+    lb.save(box_fn)
+
+def random_card(args):
+    cat = ExoCat()
+    cards = cat.cards()
+    random_card = np.random.choice(cards)
+    print(random_card)
+    cat.run_program(random_card, "editor")
+    
 
 if __name__ == "__main__":
     print(THECAT)
@@ -246,6 +269,8 @@ if __name__ == "__main__":
         action="store_true"
     )
     parser_new.set_defaults(func=new_card)
+    parser_random = subparsers.add_parser("random", help="Edit a random card")
+    parser_random.set_defaults(func=random_card)
     parser_edit = subparsers.add_parser("edit", help="Edit an old card")
     parser_edit.add_argument(
         "-c", "--card-id", help="The id of the card to edit",
@@ -298,5 +323,13 @@ if __name__ == "__main__":
         action="store", default=None
     )
     parser_links.set_defaults(func=links_cards)
+    parser_study = subparsers.add_parser(
+        "study", help="Study the materials through the Leitner box system"
+    )
+    parser_study.add_argument(
+        "-r", "--reindex", help="Reindex the Leitner box",
+        action="store_true"
+    )
+    parser_study.set_defaults(func=study_cards)
     args = parser.parse_args()
     args.func(args)
