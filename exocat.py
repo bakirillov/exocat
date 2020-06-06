@@ -66,7 +66,7 @@ class ExoCat():
         tmpl = tmpl.replace("TITLE", title)
         spl = tmpl.split("\n")
         if len(old) == 0:
-            whr = spl.index("## Study" if not study_mode else "## Timeline")
+            whr = spl.index("## Questions" if not study_mode else "## Timeline")
         else:
             whr = spl.index("## Timeline") + 1
         spl = spl[0:whr]

@@ -34,17 +34,21 @@ class LeitnerBox():
         
     @staticmethod
     def get_questions(file_contents):
-        cs = file_contents.split("\n")
-        if "## Questions" in cs:
-            qna = cs.index("## Questions")
-            cs = cs[qna+1:]
-            ai = cs.index("## Answers")
-            q_s = list(filter(lambda x: len(x) > 0, cs[:ai]))
-            a_s = list(filter(lambda x: len(x) > 0, cs[ai+1:]))
-            return({q:a for q,a in zip(q_s, a_s)})
-        else:
+        cs = [a.strip() for a in file_contents.split("\n")]
+        try:
+            if "## Questions" in cs:
+                qna = cs.index("## Questions")
+                cs = cs[qna+1:]
+                ai = cs.index("## Answers")
+                q_s = list(filter(lambda x: len(x) > 0, cs[:ai]))
+                a_s = list(filter(lambda x: len(x) > 0, cs[ai+1:]))
+            else:
+                return({})
+        except Exception as e:
             return({})
-        
+        else:
+            return({q:a for q,a in zip(q_s, a_s)})
+                
     def index(self, files):
         for file in files:
             with open(file, "r") as ih:
@@ -92,4 +96,3 @@ class LeitnerBox():
         for i,k in enumerate(keys):
             print("Question#"+str(i+1))
             self.pairs[k] = self.study_one(k)
-            print(suitable)
