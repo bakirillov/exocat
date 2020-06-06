@@ -49,7 +49,7 @@ class LeitnerBox():
         for file in files:
             with open(file, "r") as ih:
                 qa = LeitnerBox.get_questions(ih.read())
-                qa = {a: (qa[a], 0, datetime.now()) for a in qa}
+                qa = {a: (qa[a], 0, datetime.now(), 0) for a in qa}
                 intersecting_keys = set(self.pairs.keys()) & set(qa.keys())
                 noint_qa = {}
                 for a in qa:
@@ -58,27 +58,31 @@ class LeitnerBox():
                 self.pairs.update(noint_qa)
                 
     def study_one(self, question):
-        _ = input(question+"\n")
+        _ = input(question)
         answer = self.pairs[question][0]
         print(answer+"\n")
         level = 0
+        times = self.pairs[question][-1]
         tm = datetime.now()
         while True:
             correct = input("Is the answer correct? (Y,n)\n")
             if correct in ["Y", "n"]:
                 level += 1
                 break
-        print("\n")
-        return(answer, level, tm)
+        return(answer, level, tm, times)
     
     def today(self):
         t = datetime.now()
         suitable = {}
         for question in self.pairs:
-            answer, lv, qt = self.pairs[question]
+            answer, lv, qt, times = self.pairs[question]
             td = t-qt
+            if td.days > 0:
+                self.pairs[question] = (answer, lv, qt, 0)
             if td.days % 2**lv == 0:
-                suitable[question] = (answer, lv, qt)
+                if times == 0:
+                    suitable[question] = (answer, lv, qt, times)
+            self.pairs[question] = (answer, lv, qt, times+1)
         return(suitable)
     
     def study(self):
@@ -88,3 +92,4 @@ class LeitnerBox():
         for i,k in enumerate(keys):
             print("Question#"+str(i+1))
             self.pairs[k] = self.study_one(k)
+            print(suitable)
