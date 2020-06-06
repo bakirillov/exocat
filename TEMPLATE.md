@@ -19,11 +19,10 @@ COMMENTS_FOR_THE_CARD
 'Comments about the contents of the card'   
 'Forms additional link between two cards'   
 
-## Study
-### Questions
+## Questions
 * Write questions as follows    
 * In the study mode the random question will be asked    
-### Answers
+## Answers
 * Write corresponding answers here    
 
 ## Timeline
