@@ -30,7 +30,7 @@ class ExoCat():
     def cards(self):
         files = list(
             filter(
-                lambda x: x != "index.pkl", 
+                lambda x: ".md" in x, 
                 [a for a in os.walk(self.config["folder"])][0][2]
             )
         )
