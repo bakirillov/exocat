@@ -180,7 +180,7 @@ class ExoCat():
                 texts.append((i, oh.read().lower()))
         if section == "title":
             texts = [(a[0], a[1].split("\n")[0]) for a in texts]
-        filtered = list(filter(lambda x: re.search(regex, x[1]), texts))
+        filtered = list(filter(lambda x: re.search(regex.lower(), x[1]), texts))
         filtered = [a[1].split("\n")[0] for a in filtered]
         filtered = list(sorted(filtered, key=lambda x: int(x.split(" ")[1][:-1])))
         print("\n")

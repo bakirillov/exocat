@@ -62,7 +62,7 @@ class LeitnerBox():
                 self.pairs.update(noint_qa)
                 
     def study_one(self, question):
-        _ = input(question)
+        _ = input(question+"\n")
         answer = self.pairs[question][0]
         print(answer+"\n")
         level = 0
