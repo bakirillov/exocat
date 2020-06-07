@@ -81,7 +81,7 @@ class LeitnerBox():
         for question in self.pairs:
             answer, lv, qt, times = self.pairs[question]
             td = t-qt
-            if td.days > 0:
+            if td.hours > 10:
                 self.pairs[question] = (answer, lv, qt, 0)
             if td.days % 2**lv == 0:
                 if times == 0:
