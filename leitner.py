@@ -89,9 +89,11 @@ class LeitnerBox():
             self.pairs[question] = (answer, lv, qt, times+1)
         return(suitable)
     
-    def study(self):
+    def study(self, catch_up=False):
         suitable = self.today()
         keys = np.random.permutation(list(suitable.keys()))
+        if catch_up:
+            keys = keys[0:25]
         print(str(len(keys))+" questions to study today.")
         for i,k in enumerate(keys):
             print("Question#"+str(i+1))
