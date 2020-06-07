@@ -172,6 +172,21 @@ class ExoCat():
             cid = input("Enter the id of the card to view: ")
         self.run_program(self.load_card(cid, False), "viewer")
         
+    @staticmethod
+    def get_media(s):
+        media = re.findall("\(\(\w+\.\w+\)\)", s)
+        media = [a.replace("((", "").replace("))", "").lower() for a in media]
+        return(media)
+        
+    def view_media(self, cid):
+        if not cid:
+            cid = input("Enter the id of the card to view media from: ")
+        card = self.load_card(cid, True)
+        fns = ExoCat.get_media(card)
+        for fn in fns:
+            print(fn)
+            self.run_program(op.join(self.config["folder"], fn), "images")
+        
     def query(self, regex, section="full", open_newest=True):
         files = self.cards()
         texts = []
@@ -245,6 +260,11 @@ def random_card(args):
     random_card = np.random.choice(cards)
     print(random_card)
     cat.run_program(random_card, "editor")
+    
+def media_cards(args):
+    cat = ExoCat()
+    cat.view_media(args.card_id)
+    
     
 
 if __name__ == "__main__":
@@ -335,5 +355,13 @@ if __name__ == "__main__":
         action="store_true"
     )
     parser_study.set_defaults(func=study_cards)
+    parser_media = subparsers.add_parser(
+        "media", help="View media files associated with the card"
+    )
+    parser_media.add_argument(
+        "-c", "--card-id", help="The id of the card to show the media files",
+        default=None
+    )
+    parser_media.set_defaults(func=media_cards)
     args = parser.parse_args()
     args.func(args)
