@@ -185,7 +185,15 @@ class ExoCat():
         fns = ExoCat.get_media(card)
         for fn in fns:
             print(fn)
-            self.run_program(op.join(self.config["folder"], fn), "images")
+            full_fn = op.join(self.config["folder"], fn)
+            extension = op.splitext(full_fn)[-1].lower()
+            if extension in [".jpg", ".png", ".jpeg", ".giff", ".tiff"]:
+                self.run_program(full_fn, "images")
+            elif extension in [".mp3", ".wav"]:
+                self.run_program(full_fn, "audios")
+            elif extension in [".mp4", ".avi", ".mkv"]:
+                self.run_program(full_fn, "videos")
+            input()
         
     def query(self, regex, section="full", open_newest=True):
         files = self.cards()
