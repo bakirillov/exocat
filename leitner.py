@@ -53,7 +53,7 @@ class LeitnerBox():
         for file in files:
             with open(file, "r") as ih:
                 qa = LeitnerBox.get_questions(ih.read())
-                qa = {a: (qa[a], 0, datetime.now(), 0) for a in qa}
+                qa = {a: (qa[a], 0, datetime.now()) for a in qa}
                 intersecting_keys = set(self.pairs.keys()) & set(qa.keys())
                 noint_qa = {}
                 for a in qa:
@@ -66,27 +66,31 @@ class LeitnerBox():
         answer = self.pairs[question][0]
         print(answer+"\n")
         level = 0
-        times = self.pairs[question][-1]
         tm = datetime.now()
         while True:
             correct = input("Is the answer correct? (Y,n)\n")
             if correct in ["Y", "n"]:
-                level += 1
+                if correct == "Y":
+                    level += 1
+                else:
+                    level = 0
+                print("Your current level is "+str(level))
                 break
-        return(answer, level, tm, times)
+        return(answer, level, tm)
     
     def today(self):
         t = datetime.now()
         suitable = {}
         for question in self.pairs:
-            answer, lv, qt, times = self.pairs[question]
+            answer, lv, qt = self.pairs[question]
             td = t-qt
-            if td.hours > 10:
-                self.pairs[question] = (answer, lv, qt, 0)
-            if td.days % 2**lv == 0:
-                if times == 0:
-                    suitable[question] = (answer, lv, qt, times)
-            self.pairs[question] = (answer, lv, qt, times+1)
+            # print(td.seconds//3600, lv, times)
+            if lv == 0:
+                suitable[question] = (answer, lv, qt)
+            else:
+                if td.seconds//3600 > 10 and td.days % 2**lv == 0:
+             #       print(td.days % 2**lv)
+                    suitable[question] = (answer, lv, qt)
         return(suitable)
     
     def study(self, catch_up=False):
