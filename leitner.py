@@ -65,7 +65,7 @@ class LeitnerBox():
         _ = input(question+"\n")
         answer = self.pairs[question][0]
         print(answer+"\n")
-        level = 0
+        level = self.pairs[question][1]
         tm = datetime.now()
         while True:
             correct = input("Is the answer correct? (Y,n)\n")
@@ -88,7 +88,8 @@ class LeitnerBox():
             if lv == 0:
                 suitable[question] = (answer, lv, qt)
             else:
-                if td.seconds//3600 > 10 and td.days % 2**lv == 0:
+                # print(td.days % 2**lv, 2**lv, td.days+1, qt)
+                if td.seconds//3600 > 10 and (td.days + 1) % 2**lv == 0:
              #       print(td.days % 2**lv)
                     suitable[question] = (answer, lv, qt)
         return(suitable)
