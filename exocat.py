@@ -195,7 +195,7 @@ class ExoCat():
                 self.run_program(full_fn, "videos")
             input()
         
-    def query(self, regex, section="full", open_newest=True):
+    def query(self, regex, section="full", open_newest=True, view_newest=True):
         files = self.cards()
         texts = []
         for i,a in tqdm(list(enumerate(files))):
@@ -213,6 +213,10 @@ class ExoCat():
             if open_newest:
                 self.run_program(
                     self.load_card(filtered[-1].split(" ")[1][:-1], False), "editor"
+                )
+            if view_newest:
+                self.run_program(
+                    self.load_card(filtered[-1].split(" ")[1][:-1], False), "viewer"
                 )
         else:
             print("Not found")
@@ -237,9 +241,9 @@ def index_cards(args):
 def query_cards(args):
     cat = ExoCat()
     if args.title:
-        cat.query(args.title, section="title", open_newest=args.open)
+        cat.query(args.title, section="title", open_newest=args.open, view_newest=args.view)
     elif args.full:
-        cat.query(args.full, open_newest=args.open)
+        cat.query(args.full, open_newest=args.open, view_newest=args.view)
         
 def links_cards(args):
     cat = ExoCat()
@@ -331,7 +335,11 @@ if __name__ == "__main__":
         default=None
     )
     parser_query.add_argument(
-        "-o", "--open", help="Open the newest suitable file",
+        "-o", "--open", help="Open the newest suitable file in the editor",
+        action="store_true", default=False
+    )
+    parser_query.add_argument(
+        "-v", "--view", help="Open the newest suitable file in the viewer",
         action="store_true", default=False
     )
     parser_query.set_defaults(func=query_cards)
