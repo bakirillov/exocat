@@ -174,8 +174,8 @@ class ExoCat():
         
     @staticmethod
     def get_media(s):
-        media = re.findall("\(\(\w+\.\w+\)\)", s)
-        media = [a.replace("((", "").replace("))", "").lower() for a in media]
+        media = re.findall("@.+", s)
+        media = [a.replace("@", "").lower() for a in media]
         return(media)
         
     def view_media(self, cid):
