@@ -96,7 +96,7 @@ class ExoCat():
         oh.write(">\n")
         oh.write(d+"\n")
         a_title = self.load_card(a).split("\n")[0]
-        b_title = self.load_card(a).split("\n")[0]
+        b_title = self.load_card(b).split("\n")[0]
         oh.write(a_title+"\n")
         oh.write(b_title+"\n")
         
