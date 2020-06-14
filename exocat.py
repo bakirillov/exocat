@@ -277,7 +277,26 @@ def media_cards(args):
     cat = ExoCat()
     cat.view_media(args.card_id)
     
-    
+def unfinished_cards(args):
+    cat = ExoCat()
+    unf_path = op.join(cat.config["folder"], "unfinished.pkl")
+    if not op.exists(unf_path):
+        with open(unf_path, "wb") as oh:
+            pkl.dump([], oh)
+    with open(unf_path, "rb") as ih:
+        unf_list = pkl.load(ih)
+    if args.card_id:
+        if args.card_id not in unf_list:
+            unf_list.append(args.card_id)
+        else:
+            unf_list.pop(unf_list.index(args.card_id))
+        with open(unf_path, "wb") as oh:
+            pkl.dump(unf_list, oh)
+    else:
+        for a in unf_list:
+            print(cat.load_card(a, True).split("\n")[0])
+
+
 
 if __name__ == "__main__":
     print(THECAT)
@@ -379,5 +398,13 @@ if __name__ == "__main__":
         default=None
     )
     parser_media.set_defaults(func=media_cards)
+    parser_unfinished = subparsers.add_parser(
+        "unfinished", help="Add or remove from the list of unfinished cards"
+    )
+    parser_unfinished.add_argument(
+        "-c", "--card-id", help="The id of the card to work on",
+        default=None
+    )
+    parser_unfinished.set_defaults(func=unfinished_cards)
     args = parser.parse_args()
     args.func(args)
