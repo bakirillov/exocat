@@ -168,10 +168,14 @@ class ExoCat():
         self.run_program(self.load_card(cid, False), "editor")
         
     def view(self, cid):
-        if not cid:
-            cid = input("Enter the id of the card to view: ")
-        self.run_program(self.load_card(cid, False), "viewer")
-        
+        if cid:
+            self.run_program(self.load_card(cid, False), "viewer")
+        else:
+            cs = self.cards()
+            for a in cs:
+                with open(a, "r") as ih:
+                    print(ih.read().split("\n")[0])
+
     @staticmethod
     def get_media(s):
         media = re.findall("@.+", s)
