@@ -37,6 +37,10 @@ class ExoCat():
         files = [op.join(self.config["folder"], a) for a in files]
         return(files)
     
+    @staticmethod
+    def get_card_id(s):
+        return(re.search("\d+", s)[0])
+    
     def load_card(self, cid, contents=True):
         path = op.join(self.config["folder"], cid+".md")
         if contents:
@@ -232,15 +236,15 @@ def new_card(args):
     
 def view_card(args):
     cat = ExoCat()
-    cat.view(args.card_id)
+    cat.view(ExoCat.get_card_id(args.card_id))
     
 def edit_card(args):
     cat = ExoCat()
-    cat.edit(args.card_id)
+    cat.edit(ExoCat.get_card_id(args.card_id))
 
 def index_cards(args):
     cat = ExoCat()
-    cat.index(args.card_id)
+    cat.index(ExoCat.get_card_id(args.card_id))
     
 def query_cards(args):
     cat = ExoCat()
@@ -251,7 +255,7 @@ def query_cards(args):
         
 def links_cards(args):
     cat = ExoCat()
-    cat.links(args.card_id, args.type, args.regex)
+    cat.links(ExoCat.get_card_id(args.card_id), args.type, args.regex)
     
 def overview(args):
     cat = ExoCat()
@@ -279,7 +283,7 @@ def random_card(args):
     
 def media_cards(args):
     cat = ExoCat()
-    cat.view_media(args.card_id)
+    cat.view_media(ExoCat.get_card_id(args.card_id))
     
 def unfinished_cards(args):
     cat = ExoCat()
@@ -290,10 +294,11 @@ def unfinished_cards(args):
     with open(unf_path, "rb") as ih:
         unf_list = pkl.load(ih)
     if args.card_id:
-        if args.card_id not in unf_list:
-            unf_list.append(args.card_id)
+        cid = ExoCat.get_card_id(args.card_id)
+        if cid not in unf_list:
+            unf_list.append(cid)
         else:
-            unf_list.pop(unf_list.index(args.card_id))
+            unf_list.pop(unf_list.index(cid))
         with open(unf_path, "wb") as oh:
             pkl.dump(unf_list, oh)
     else:
