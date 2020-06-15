@@ -84,19 +84,19 @@ class ExoCat():
             oh.write(tmpl)
         self.run_program(path, "editor")
         
-    def index(self, cid):
+    def index(self, do_implicits=False):
         index_path = op.join(self.config["folder"], "index.pkl")
         if op.exists(index_path):
             with open(index_path, "rb") as ih:
                 I = pkl.load(ih)
         else:
             I = CatIndex.empty()
-        if cid == "renew":
-            I.last = None
-        elif cid:
-            I.last = cid
+        #if cid == "renew":
+        #    I.last = None
+        #elif cid:
+        #    I.last = cid
         files = self.cards()
-        I.index(files)
+        I.index(files, do_implicits)
         I.save(index_path)
         
     def write_down(self, oh, a, b, d):
@@ -128,7 +128,7 @@ class ExoCat():
             with open(fn, "w") as oh:
                 link_types = [link_type]
                 if link_type == "all":
-                    link_types = ["explicits", "implicits", "source", "timeline"]
+                    link_types = ["explicits", "implicits"]
                 for lt in link_types:
                     eas = self.filter_links(nx.get_edge_attributes(sg, lt), regex)
                     for a in eas:
@@ -179,7 +179,6 @@ class ExoCat():
             self.run_program(self.load_card(cid, False), "viewer")
         else:
             cs = self.cards()
-           # print(cs)
             for a in cs:
                 with open(a, "r") as ih:
                     print(ih.read().split("\n")[0])
@@ -248,7 +247,8 @@ def edit_card(args):
 
 def index_cards(args):
     cat = ExoCat()
-    cat.index(ExoCat.get_card_id(args.card_id))
+    do_implicits = True if args.type in ["all", "implicits"] else False
+    cat.index(do_implicits)
     
 def query_cards(args):
     cat = ExoCat()
@@ -351,8 +351,8 @@ if __name__ == "__main__":
         "index", help="Index existing cards"
     )
     parser_index.add_argument(
-        "-c", "--card-id", help="The id of the card to start index from",
-        default=None
+        "-t", "--type", help="The link type",
+        default="all", choices=["all", "explicits", "implicits"] 
     )
     parser_index.set_defaults(func=index_cards)
     parser_query = subparsers.add_parser(
@@ -384,7 +384,7 @@ if __name__ == "__main__":
     )
     parser_links.add_argument(
         "-t", "--type", help="The link type",
-        default="all", choices=["all", "explicits", "implicits", "source", "timeline"] 
+        default="all", choices=["all", "explicits", "implicits"] 
     )
     parser_links.add_argument(
         "-r", "--regex", help="Filter the links by regex",
