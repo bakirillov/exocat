@@ -84,7 +84,7 @@ class ExoCat():
             oh.write(tmpl)
         self.run_program(path, "editor")
         
-    def index(self, do_implicits=False):
+    def index(self, do_implicits=False, do_explicits=True):
         index_path = op.join(self.config["folder"], "index.pkl")
         if op.exists(index_path):
             with open(index_path, "rb") as ih:
@@ -96,7 +96,7 @@ class ExoCat():
         #elif cid:
         #    I.last = cid
         files = self.cards()
-        I.index(files, do_implicits)
+        I.index(files, do_implicits, do_explicits)
         I.save(index_path)
         
     def write_down(self, oh, a, b, d):
@@ -248,7 +248,8 @@ def edit_card(args):
 def index_cards(args):
     cat = ExoCat()
     do_implicits = True if args.type in ["all", "implicits"] else False
-    cat.index(do_implicits)
+    do_explicits = True if args.type in ["all", "implicits"] else False
+    cat.index(do_implicits, do_explicits)
     
 def query_cards(args):
     cat = ExoCat()

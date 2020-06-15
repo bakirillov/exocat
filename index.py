@@ -37,14 +37,18 @@ class CatIndex():
         self.last = last
     
     @staticmethod
-    def examine(s, do_implicits=False):
-        explicits = re.findall("\[\[\w+\]\]", s)
-        explicits = [a.replace("[[", "").replace("]]", "").lower() for a in explicits]
+    def examine(s, do_implicits=False, do_explicits=True):
+        explicits = []
+        if do_explicits:
+            explicits = re.findall("\[\[\w+\]\]", s)
+            explicits = [a.replace("[[", "").replace("]]", "").lower() for a in explicits]
         implicits = []
         if do_implicits:
             spl = list(
                 filter(
-                    lambda x: re.match("\w+", x) and x not in CatIndex.en_stops and x not in CatIndex.ru_stops, 
+                    lambda x: re.match(
+                        "\w+", x
+                    ) and x not in CatIndex.en_stops and x not in CatIndex.ru_stops and len(x) > 2, 
                     re.split("\s", s)
                 )
             )
@@ -72,7 +76,7 @@ class CatIndex():
         with open(fn, "wb") as oh:
             pkl.dump(self, oh)
     
-    def index(self, list_of_files, do_implicits=False):
+    def index(self, list_of_files, do_implicits=False, do_explicits=True):
         lst = sorted(
             deepcopy(list_of_files), 
             key=lambda x: int(op.split(x)[-1].replace(".md", ""))
@@ -82,13 +86,13 @@ class CatIndex():
         for a in tqdm(list_of_files):
             with open(a, "r") as ih:
                 a_file = ih.read().lower()
-            a_linkables = CatIndex.examine(a_file, do_implicits)
+            a_linkables = CatIndex.examine(a_file, do_implicits, do_explicits)
             a_cid = op.split(a)[-1].replace(".md", "")
             for b in lst:
                 if a != b:
                     with open(b, "r") as ih:
                         b_file = ih.read()
-                    b_linkables = CatIndex.examine(b_file, do_implicits)
+                    b_linkables = CatIndex.examine(b_file, do_implicits, do_explicits)
                     ebunch = {}
                     add_edge = False
                     for c in b_linkables:
