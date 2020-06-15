@@ -31,18 +31,21 @@ class ExoCat():
         files = list(
             filter(
                 lambda x: ".md" in x, 
-                [a for a in os.walk(self.config["folder"])][0][2]
+                [a for a in os.walk(op.join(self.config["folder"], "cards"))][0][2]
             )
         )
-        files = [op.join(self.config["folder"], a) for a in files]
+        files = [op.join(self.config["folder"], "cards", a) for a in files]
         return(files)
     
     @staticmethod
     def get_card_id(s):
-        return(re.search("\d+", s)[0])
+        if s:
+            return(re.search("\d+", s)[0])
+        else:
+            return(s)
     
     def load_card(self, cid, contents=True):
-        path = op.join(self.config["folder"], cid+".md")
+        path = op.join(self.config["folder"], "cards", cid+".md")
         if contents:
             with open(path, "r") as ih:
                 return(ih.read().lower())
@@ -176,6 +179,7 @@ class ExoCat():
             self.run_program(self.load_card(cid, False), "viewer")
         else:
             cs = self.cards()
+           # print(cs)
             for a in cs:
                 with open(a, "r") as ih:
                     print(ih.read().split("\n")[0])
@@ -193,7 +197,7 @@ class ExoCat():
         fns = ExoCat.get_media(card)
         for fn in fns:
             print(fn)
-            full_fn = op.join(self.config["folder"], fn)
+            full_fn = op.join(self.config["folder"], "cards", fn)
             extension = op.splitext(full_fn)[-1].lower()
             if extension in [".jpg", ".png", ".jpeg", ".giff", ".tiff"]:
                 self.run_program(full_fn, "images")
