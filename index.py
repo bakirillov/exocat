@@ -44,12 +44,13 @@ class CatIndex():
             explicits = [a.replace("[[", "").replace("]]", "").lower() for a in explicits]
         implicits = []
         if do_implicits:
+            ss = "\n".join(list(filter(lambda x: "#" not in x, s.split("\n"))))
             spl = list(
                 filter(
                     lambda x: re.match(
                         "\w+", x
                     ) and x not in CatIndex.en_stops and x not in CatIndex.ru_stops and len(x) > 2, 
-                    re.split("\s", s)
+                    re.split("\s", ss)
                 )
             )
             for a in spl:

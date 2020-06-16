@@ -91,10 +91,6 @@ class ExoCat():
                 I = pkl.load(ih)
         else:
             I = CatIndex.empty()
-        #if cid == "renew":
-        #    I.last = None
-        #elif cid:
-        #    I.last = cid
         files = self.cards()
         I.index(files, do_implicits, do_explicits)
         I.save(index_path)
