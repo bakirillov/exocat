@@ -24,9 +24,3 @@ COMMENTS_FOR_THE_CARD
 * In the study mode the random question will be asked    
 ## Answers
 * Write corresponding answers here    
-
-## Timeline
-TIMELINE_OF_THE_CARD    
-'The ids of old versions, this is created using exocat update'   
-'Forms an additional link between two cards'    
-

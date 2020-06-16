@@ -62,7 +62,7 @@ class ExoCat():
         fn = op.join(tempdir, datetime.now().strftime("%d%m%Y%H%M%S")+".txt")
         return(fn)
         
-    def new(self, title, study_mode, old=[]):
+    def new(self, title, old=[]):
         cid = datetime.now().strftime("%d%m%Y%H%M%S")
         if not op.exists(self.config["folder"]):
             os.makedirs(self.config["folder"])
@@ -72,16 +72,12 @@ class ExoCat():
             title = input("Enter the title of the card: ")
         tmpl = tmpl.replace("TITLE", title)
         spl = tmpl.split("\n")
-        if len(old) == 0:
-            whr = spl.index("## Questions" if not study_mode else "## Timeline")
-        else:
-            whr = spl.index("## Timeline") + 1
-        spl = spl[0:whr]
         tmpl = "\n".join(spl)
         if len(old) > 0:
             tmpl += "\n"+"\n".join(old)
         with open(path, "w") as oh:
             oh.write(tmpl)
+        print(cid)
         self.run_program(path, "editor")
         
     def index(self, do_implicits=False, do_explicits=True):
@@ -231,7 +227,7 @@ class ExoCat():
         
 def new_card(args):
     cat = ExoCat()
-    cat.new(args.title, args.study)
+    cat.new(args.title)
     
 def view_card(args):
     cat = ExoCat()
@@ -324,10 +320,6 @@ if __name__ == "__main__":
     parser_new.add_argument(
         "-t", "--title", help="The title of the card",
         default=None
-    )
-    parser_new.add_argument(
-        "-s", "--study", help="Create the card in study mode",
-        action="store_true"
     )
     parser_new.set_defaults(func=new_card)
     parser_random = subparsers.add_parser("random", help="Edit a random card")
