@@ -216,7 +216,6 @@ class ExoCat():
         section_end = list(filter(lambda x: x > section_start, all_section_starts))[0]
         return("\n".join(text[section_start:section_end]))
         
-        
     def query(self, regex, section="full", open_newest=True, view_newest=True):
         files = self.cards()
         texts = []
@@ -305,21 +304,20 @@ def unfinished_cards(args):
     unf_path = op.join(cat.config["folder"], "unfinished.pkl")
     if not op.exists(unf_path):
         with open(unf_path, "wb") as oh:
-            pkl.dump([], oh)
+            pkl.dump({}, oh)
     with open(unf_path, "rb") as ih:
         unf_list = pkl.load(ih)
-    if args.card_id:
-        cid = ExoCat.get_card_id(args.card_id)
+    if args.id:
+        cid = ExoCat.get_card_id(args.id)
         if cid not in unf_list:
-            unf_list.append(cid)
+            unf_list[cid] = args.comment if args.comment else ""
         else:
-            unf_list.pop(unf_list.index(cid))
+            del unf_list[cid]
         with open(unf_path, "wb") as oh:
             pkl.dump(unf_list, oh)
     else:
         for a in unf_list:
-            print(cat.load_card(a, True).split("\n")[0])
-
+            print(cat.load_card(a, True).split("\n")[0]+" ==> "+unf_list[a])
 
 
 if __name__ == "__main__":
@@ -422,7 +420,11 @@ if __name__ == "__main__":
         "unfinished", help="Add or remove from the list of unfinished cards"
     )
     parser_unfinished.add_argument(
-        "-c", "--card-id", help="The id of the card to work on",
+        "-i", "--id", help="The id of the card to work on",
+        default=None
+    )
+    parser_unfinished.add_argument(
+        "-c", "--comment", help="The comments",
         default=None
     )
     parser_unfinished.set_defaults(func=unfinished_cards)
