@@ -26,7 +26,12 @@ class ExoCat():
             self.template = ih.read()
         with open("config.json", "r") as ih:
             self.config = json.loads(ih.read())
-            
+        self.sections = {
+            "title": "#", "description": "## description", 
+            "contents": "## contents", "questions": "## questions",
+            "answers": "## answers"
+        }
+        
     def cards(self):
         files = list(
             filter(
@@ -197,18 +202,31 @@ class ExoCat():
             elif extension in [".mp4", ".avi", ".mkv"]:
                 self.run_program(full_fn, "videos")
             input()
+            
+    def extract_section(self, text, section):
+        if section == "full":
+            return("\n".join(text))
+        section_start_line = list(filter(lambda x: x.startswith(self.sections[section]), text))
+        all_section_starts = list(filter(lambda x: text[x].startswith("## "), np.arange(len(text))))
+        if len(section_start_line) > 0:
+            section_start_line = section_start_line[0]
+        else:
+            return("No such section")
+        section_start = text.index(section_start_line)
+        section_end = list(filter(lambda x: x > section_start, all_section_starts))[0]
+        return("\n".join(text[section_start:section_end]))
+        
         
     def query(self, regex, section="full", open_newest=True, view_newest=True):
         files = self.cards()
         texts = []
         for i,a in tqdm(list(enumerate(files))):
             with open(a) as oh:
-                texts.append((i, oh.read().lower()))
-        if section == "title":
-            texts = [(a[0], a[1].split("\n")[0]) for a in texts]
+                texts.append((i, oh.read().lower().split("\n")))
+        texts = list(sorted(texts, key=lambda x: int(ExoCat.get_card_id(x[1][0]))))
+        texts = [(a[0], self.extract_section(a[1], section), a[1][0]) for a in texts]
         filtered = list(filter(lambda x: re.search(regex.lower(), x[1]), texts))
-        filtered = [a[1].split("\n")[0] for a in filtered]
-        filtered = list(sorted(filtered, key=lambda x: int(x.split(" ")[1][:-1])))
+        filtered = [a[2].split("\n")[0] for a in filtered]
         print("\n")
         if len(filtered) > 0:
             for a in filtered:
@@ -245,10 +263,10 @@ def index_cards(args):
     
 def query_cards(args):
     cat = ExoCat()
-    if args.title:
-        cat.query(args.title, section="title", open_newest=args.open, view_newest=args.view)
-    elif args.full:
-        cat.query(args.full, open_newest=args.open, view_newest=args.view)
+    cat.query(
+        args.regex, section=args.section, 
+        open_newest=args.open, view_newest=args.view
+    )
         
 def links_cards(args):
     cat = ExoCat()
@@ -348,12 +366,12 @@ if __name__ == "__main__":
         "query", help="Query the exocortex"
     )
     parser_query.add_argument(
-        "-t", "--title", help="The regular expression for title",
-        default=None
+        "-r", "--regex", help="The regular expression for the search"
     )
     parser_query.add_argument(
-        "-f", "--full", help="The regular expression for full-text search",
-        default=None
+       "-s", "--section", help="This restricts the search for a certain section",
+        choices=["title", "description", "contents", "questions", "answers", "full"],
+        default="title"
     )
     parser_query.add_argument(
         "-o", "--open", help="Open the newest suitable file in the editor",
