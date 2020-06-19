@@ -39,6 +39,7 @@ class ExoCat():
                 [a for a in os.walk(op.join(self.config["folder"], "cards"))][0][2]
             )
         )
+        files = list(sorted(files, key=lambda x: int(x.split(".")[0])))
         files = [op.join(self.config["folder"], "cards", a) for a in files]
         return(files)
     
