@@ -32,6 +32,18 @@ class ExoCat():
             "answers": "## answers"
         }
         
+    @staticmethod
+    def to_ms(x):
+        """needed this because strptime fails for some reason"""
+        day = int(x[0:2])
+        month = int(x[2:4])
+        year = int(x[4:8])
+        hour = int(x[8:10])
+        minute = int(x[10:12])
+        second = int(x[12:])
+        dt = datetime(year, month, day, hour, minute, second)
+        return(dt.timestamp())
+        
     def cards(self):
         files = list(
             filter(
@@ -39,7 +51,7 @@ class ExoCat():
                 [a for a in os.walk(op.join(self.config["folder"], "cards"))][0][2]
             )
         )
-        files = list(sorted(files, key=lambda x: int(x.split(".")[0])))
+        files = list(sorted(files, key=lambda x: ExoCat.to_ms(x.split(".")[0])))
         files = [op.join(self.config["folder"], "cards", a) for a in files]
         return(files)
     
@@ -223,7 +235,6 @@ class ExoCat():
         for i,a in tqdm(list(enumerate(files))):
             with open(a) as oh:
                 texts.append((i, oh.read().lower().split("\n")))
-        texts = list(sorted(texts, key=lambda x: int(ExoCat.get_card_id(x[1][0]))))
         texts = [(a[0], self.extract_section(a[1], section), a[1][0]) for a in texts]
         filtered = list(filter(lambda x: re.search(regex.lower(), x[1]), texts))
         filtered = [a[2].split("\n")[0] for a in filtered]
