@@ -238,7 +238,10 @@ class ExoCat():
         texts = []
         for i,a in tqdm(list(enumerate(files))):
             with open(a) as oh:
-                texts.append((i, oh.read().lower().split("\n")))
+                try:
+                    texts.append((i, oh.read().lower().split("\n")))
+                except Exception as E:
+                    print(E, a)
         texts = [(a[0], self.extract_section(a[1], section), a[1][0]) for a in texts]
         filtered = list(filter(lambda x: re.search(regex.lower(), x[1]), texts))
         filtered = [a[2].split("\n")[0] for a in filtered]
