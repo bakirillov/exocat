@@ -35,14 +35,18 @@ class ExoCat():
     @staticmethod
     def to_ms(x):
         """needed this because strptime fails for some reason"""
-        day = int(x[0:2])
-        month = int(x[2:4])
-        year = int(x[4:8])
-        hour = int(x[8:10])
-        minute = int(x[10:12])
-        second = int(x[12:])
-        dt = datetime(year, month, day, hour, minute, second)
-        return(dt.timestamp())
+        try:
+            day = int(x[0:2])
+            month = int(x[2:4])
+            year = int(x[4:8])
+            hour = int(x[8:10])
+            minute = int(x[10:12])
+            second = int(x[12:])
+            dt = datetime(year, month, day, hour, minute, second)
+        except Exception as E:
+            return(0)
+        else:
+            return(dt.timestamp())
         
     def cards(self):
         files = list(
