@@ -23,14 +23,14 @@ There could be two kinds of links:
 `links -c CARD_ID -t TYPE -r REGEX` - view the existing links of a particular card that belong to a type and match a regex;    
 
 ### Study mode
-`study` - runs the study mode: Leitner box spaced repetition;
-Option `--reindex` - go over the cards and get new question-answer pair;
-Option `--catch-up` - limits the number of cards in a study session to 25;
+`study` - runs the study mode: Leitner box spaced repetition;    
+Option `--reindex` - go over the cards and get new question-answer pair;    
+Option `--catch-up` - limits the number of cards in a study session to 25;    
 
 ### Miscellanea
-`media -c CARD_ID` - view media files associated with the specified card;
-`unfinished -i CARD_ID -c COMMENT` - add a card into the unfinished list with a specified comment. The repeated application removes from the list. 
-Run `unfinished` with no options to list all the unfinished cards. 
+`media -c CARD_ID` - view media files associated with the specified card;    
+`unfinished -i CARD_ID -c COMMENT` - add a card into the unfinished list with a specified comment. The repeated application removes from the list.      
+Run `unfinished` with no options to list all the unfinished cards.     
 
 ## TODO:
 1. Readme and tutorial    
