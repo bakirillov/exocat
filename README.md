@@ -1,6 +1,11 @@
 # exocat
 Personal exocortex manager
 
+ _._     _,-'""`-._
+(,-.`._,'(       |\`-/|
+    `-.-' \ )-`( , o o)
+          `-    \`_`"'-
+
 ## Manual
 
 ### Card management
