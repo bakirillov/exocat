@@ -8,6 +8,8 @@ __________`-    \`_`"'-
 
 ## Manual
 
+View help with `python exocat.py --help`.
+
 ### Card management
 `new -t TITLE` - create a new card in the exocortex. CARD_ID is formed based on the current date and time;    
 `edit -c CARD_ID` - edit a card with given ID;    
