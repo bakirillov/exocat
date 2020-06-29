@@ -88,6 +88,7 @@ class ExoCat():
         cid = datetime.now().strftime("%d%m%Y%H%M%S")
         if not op.exists(self.config["folder"]):
             os.makedirs(self.config["folder"])
+            os.makedirs(op.join(self.config["folder"], "cards"))
         path = self.load_card(cid, False)
         tmpl = self.template.replace("ID", cid)
         if not title:
