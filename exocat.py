@@ -340,7 +340,7 @@ def unfinished_cards(args):
         for a in unf_list:
             print(cat.load_card(a, True).split("\n")[0]+" ==> "+unf_list[a])
 
-def include_cards(args):
+def include_card(args):
     cat = ExoCat()
     card_id = cat.new(args.file, run_editor=False)
     card = cat.load_card(card_id, contents=True)
@@ -470,7 +470,7 @@ if __name__ == "__main__":
     parser_include = subparsers.add_parser(
         "include", help="Include a suitable Markdown file into the exocortex",
     )
-    parser_include = subparsers.add_parser(
+    parser_include.add_argument(
         "-f", "--file", help="The name of the file"
     )
     parser_include.set_defaults(func=include_card)
