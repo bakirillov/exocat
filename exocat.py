@@ -66,11 +66,14 @@ class ExoCat():
         else:
             return(s)
     
-    def load_card(self, cid, contents=True):
+    def load_card(self, cid, contents=True, as_is=False):
         path = op.join(self.config["folder"], "cards", cid+".md")
         if contents:
             with open(path, "r") as ih:
-                return(ih.read().lower())
+                if not as_is:
+                    return(ih.read().lower())
+                else:
+                    return(ih.read())
         else:
             return(path)
         
@@ -343,7 +346,7 @@ def unfinished_cards(args):
 def include_card(args):
     cat = ExoCat()
     card_id = cat.new(args.file, run_editor=False)
-    card = cat.load_card(card_id, contents=True)
+    card = cat.load_card(card_id, contents=True, as_is=True)
     with open(args.file, "r") as ih:
         the_file = ih.read()
     out_card = card.replace(
