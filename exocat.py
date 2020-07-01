@@ -84,7 +84,7 @@ class ExoCat():
         fn = op.join(tempdir, datetime.now().strftime("%d%m%Y%H%M%S")+".txt")
         return(fn)
         
-    def new(self, title, old=[]):
+    def new(self, title, run_editor=True):
         cid = datetime.now().strftime("%d%m%Y%H%M%S")
         if not op.exists(self.config["folder"]):
             os.makedirs(self.config["folder"])
@@ -96,12 +96,13 @@ class ExoCat():
         tmpl = tmpl.replace("TITLE", title)
         spl = tmpl.split("\n")
         tmpl = "\n".join(spl)
-        if len(old) > 0:
-            tmpl += "\n"+"\n".join(old)
         with open(path, "w") as oh:
             oh.write(tmpl)
         print(cid)
-        self.run_program(path, "editor")
+        if run_editor:
+            self.run_program(path, "editor")
+        else:
+            return(cid)
         
     def index(self, do_implicits=False, do_explicits=True):
         index_path = op.join(self.config["folder"], "index.pkl")
@@ -339,6 +340,24 @@ def unfinished_cards(args):
         for a in unf_list:
             print(cat.load_card(a, True).split("\n")[0]+" ==> "+unf_list[a])
 
+def include_cards(args):
+    cat = ExoCat()
+    card_id = cat.new(args.file, run_editor=False)
+    card = cat.load_card(card_id, contents=True)
+    with open(args.file, "r") as ih:
+        the_file = ih.read()
+    out_card = card.replace(
+            "## Contents", 
+            "## Contents\n"+the_file.replace(
+                "# ", "### ",
+            ).replace(
+                "## ", "#### "
+            ).replace("### ", "##### ").replace("#### ", "###### ")
+    )
+    card_fn = cat.load_card(card_id, contents=False)
+    with open(card_fn, "w") as oh:
+        oh.write(out_card)
+
 
 if __name__ == "__main__":
     print(THECAT)
@@ -448,5 +467,12 @@ if __name__ == "__main__":
         default=None
     )
     parser_unfinished.set_defaults(func=unfinished_cards)
+    parser_include = subparsers.add_parser(
+        "include", help="Include a suitable Markdown file into the exocortex",
+    )
+    parser_include = subparsers.add_parser(
+        "-f", "--file", help="The name of the file"
+    )
+    parser_include.set_defaults(func=include_card)
     args = parser.parse_args()
     args.func(args)
