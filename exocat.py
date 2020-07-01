@@ -215,14 +215,17 @@ class ExoCat():
         fns = ExoCat.get_media(card)
         for fn in fns:
             print(fn)
-            full_fn = op.join(self.config["folder"], "cards", fn)
-            extension = op.splitext(full_fn)[-1].lower()
+            extension = op.splitext(fn)[-1].lower()
             if extension in [".jpg", ".png", ".jpeg", ".giff", ".tiff"]:
-                self.run_program(full_fn, "images")
+                self.run_program(fn, "images")
             elif extension in [".mp3", ".wav"]:
-                self.run_program(full_fn, "audios")
+                self.run_program(fn, "audios")
             elif extension in [".mp4", ".avi", ".mkv"]:
-                self.run_program(full_fn, "videos")
+                self.run_program(fn, "videos")
+            elif extension in [".pdf", ".djvu", ".md"]:
+                self.run_program(fn, "docs")
+            elif extension in [".doc", ".docx", ".odt"]:
+                self.run_program(fn, "word")
             input()
             
     def extract_section(self, text, section):
@@ -475,6 +478,9 @@ if __name__ == "__main__":
     )
     parser_include.add_argument(
         "-f", "--file", help="The name of the file"
+    )
+    parser_include.add_argument(
+        "-m", "--merge", help="Merge with this card"
     )
     parser_include.set_defaults(func=include_card)
     args = parser.parse_args()
