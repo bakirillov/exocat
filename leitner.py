@@ -35,6 +35,7 @@ class LeitnerBox():
     @staticmethod
     def get_questions(file_contents):
         cs = [a.strip().lower() for a in file_contents.split("\n")]
+        title = cs[0]
         try:
             if "## questions" in cs:
                 qna = cs.index("## questions")
@@ -47,8 +48,8 @@ class LeitnerBox():
         except Exception as e:
             return({})
         else:
-            q2a = {q:a for q,a in zip(q_s, a_s)}
-            a2q = {a:q for q,a in zip(q_s, a_s)}
+            q2a = {q+" FROM "+title:a for q,a in zip(q_s, a_s)}
+            a2q = {a+" FROM "+title:q for q,a in zip(q_s, a_s)}
             q2a.update(a2q)
             return(q2a)
                 
