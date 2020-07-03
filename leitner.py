@@ -47,7 +47,10 @@ class LeitnerBox():
         except Exception as e:
             return({})
         else:
-            return({q:a for q,a in zip(q_s, a_s)})
+            q2a = {q:a for q,a in zip(q_s, a_s)}
+            a2q = {a:q for q,a in zip(q_s, a_s)}
+            q2a.update(a2q)
+            return(q2a)
                 
     def index(self, files):
         for file in files:
