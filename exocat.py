@@ -364,6 +364,27 @@ def include_card(args):
     with open(card_fn, "w") as oh:
         oh.write(out_card)
 
+def manage_ideas(args):
+    cat = ExoCat()
+    ideas_path = op.join(cat.config["folder"], "ideas.pkl")
+    if not op.exists(ideas_path):
+        with open(ideas_path, "wb") as oh:
+            pkl.dump([], oh)
+    with open(ideas_path, "rb") as ih:
+        ideas_list = pkl.load(ih)
+    if args.list:
+        for i,a in enumerate(ideas_list):
+            print(str(i)+": "+a)
+    else:
+        if args.new:
+            ideas_list.append(args.new)
+            print("Added "+str(ideas_list.index(args.new))+": "+args.new)
+        elif args.solve:
+            print("Solved "+ideas_list.pop(int(args.solve)))
+    with open(ideas_path, "wb") as oh:
+        pkl.dump(ideas_list, oh)
+
+
 
 if __name__ == "__main__":
     print(THECAT)
@@ -483,5 +504,19 @@ if __name__ == "__main__":
         "-m", "--merge", help="Merge with this card"
     )
     parser_include.set_defaults(func=include_card)
+    parser_idea = subparsers.add_parser(
+        "idea", help="Manage ideas",
+    )
+    parser_idea.add_argument(
+        "-n", "--new", help="Add a new idea to list"
+    )
+    parser_idea.add_argument(
+        "-l", "--list", help="List the existing ideas",
+        action="store_true"
+    )
+    parser_idea.add_argument(
+        "-s", "--solve", help="Solve the idea"
+    )
+    parser_idea.set_defaults(func=manage_ideas)
     args = parser.parse_args()
     args.func(args)
