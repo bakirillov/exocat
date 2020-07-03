@@ -34,12 +34,12 @@ class LeitnerBox():
         
     @staticmethod
     def get_questions(file_contents):
-        cs = [a.strip() for a in file_contents.split("\n")]
+        cs = [a.strip().lower() for a in file_contents.split("\n")]
         try:
-            if "## Questions" in cs:
-                qna = cs.index("## Questions")
+            if "## questions" in cs:
+                qna = cs.index("## questions")
                 cs = cs[qna+1:]
-                ai = cs.index("## Answers")
+                ai = cs.index("## answers")
                 q_s = list(filter(lambda x: len(x) > 0, cs[:ai]))
                 a_s = list(filter(lambda x: len(x) > 0, cs[ai+1:]))
             else:
@@ -68,9 +68,9 @@ class LeitnerBox():
         level = self.pairs[question][1]
         tm = datetime.now()
         while True:
-            correct = input("Is the answer correct? (Y,n)\n")
-            if correct in ["Y", "n"]:
-                if correct == "Y":
+            correct = input("Is the answer correct? (Y,n)\n").lower()
+            if correct in ["y", "n"]:
+                if correct == "y":
                     level += 1
                 else:
                     level = 0
