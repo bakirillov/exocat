@@ -231,15 +231,18 @@ class ExoCat():
     def extract_section(self, text, section):
         if section == "full":
             return("\n".join(text))
-        section_start_line = list(filter(lambda x: x.startswith(self.sections[section]), text))
-        all_section_starts = list(filter(lambda x: text[x].startswith("## "), np.arange(len(text))))
-        if len(section_start_line) > 0:
-            section_start_line = section_start_line[0]
+        elif section == "title":
+            return(text[0])
         else:
-            return("No such section")
-        section_start = text.index(section_start_line)
-        section_end = list(filter(lambda x: x > section_start, all_section_starts))[0]
-        return("\n".join(text[section_start:section_end]))
+            section_start_line = list(filter(lambda x: x.startswith(self.sections[section]), text))
+            all_section_starts = list(filter(lambda x: text[x].startswith("## "), np.arange(len(text))))
+            if len(section_start_line) > 0:
+                section_start_line = section_start_line[0]
+            else:
+                return("No such section")
+            section_start = text.index(section_start_line)
+            section_end = list(filter(lambda x: x > section_start, all_section_starts))[0]
+            return("\n".join(text[section_start:section_end]))
         
     def query(self, regex, section="full", open_newest=True, view_newest=True):
         files = self.cards()
@@ -353,8 +356,8 @@ def include_card(args):
     with open(args.file, "r") as ih:
         the_file = ih.read()
     out_card = card.replace(
-            "## Contents", 
-            "## Contents\n"+the_file.replace(
+            "## contents", 
+            "## contents\n"+the_file.replace(
                 "# ", "### ",
             ).replace(
                 "## ", "#### "
