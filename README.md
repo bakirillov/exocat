@@ -1,10 +1,8 @@
 # exocat
 Personal exocortex manager
 
- _._     _,-'""`-._     
-(,-.`._,'(       |\`-/|     
-____`-.-' \ )-`( , o o)     
-__________`-    \`_`"'-     
+This is a prototype. Expect breaking changes.
+
 
 ## Manual
 
