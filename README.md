@@ -32,6 +32,12 @@ There could be two kinds of links:
 Option `--reindex` - go over the cards and get new question-answer pair;    
 Option `--catch-up` - limits the number of cards in a study session to 25;    
 
+### Idea mode
+`idea` - manage a list of ideas;
+Option `-l, --list` - print the list of ideas;
+Option `-n IDEA, --new IDEA` - add a new idea to the list;
+Option `-s IDEA_NUMBER, --solve IDEA_NUMBER` - remove the idea from the list;
+
 ### Miscellanea
 `media -c CARD_ID` - view media files associated with the specified card;    
 `unfinished -i CARD_ID -c COMMENT` - add a card into the unfinished list with a specified comment. The repeated application removes from the list.      
