@@ -51,7 +51,7 @@ class ExoCat():
     def cards(self):
         files = list(
             filter(
-                lambda x: ".md" in x, 
+                lambda x: ".md" in op.splitext(x)[-1], 
                 [a for a in os.walk(op.join(self.config["folder"], "cards"))][0][2]
             )
         )
@@ -351,22 +351,41 @@ def unfinished_cards(args):
 
 def include_card(args):
     cat = ExoCat()
-    card_id = cat.new(args.file, run_editor=False)
-    card = cat.load_card(card_id, contents=True, as_is=True)
-    with open(args.file, "r") as ih:
-        the_file = ih.read()
-    out_card = card.replace(
-            "## contents", 
-            "## contents\n"+the_file.replace(
-                "# ", "### ",
-            ).replace(
-                "## ", "#### "
-            ).replace("### ", "##### ").replace("#### ", "###### ")
-    )
-    card_fn = cat.load_card(card_id, contents=False)
-    with open(card_fn, "w") as oh:
-        oh.write(out_card)
-
+    if not args.merge:
+        card_id = cat.new(args.file, run_editor=False)
+        card = cat.load_card(card_id, contents=True, as_is=True)
+        with open(args.file, "r") as ih:
+            the_file = ih.read()
+        out_card = card.replace(
+                "## contents", 
+                "## contents\n"+the_file.replace(
+                    "# ", "### ",
+                ).replace(
+                    "## ", "#### "
+                ).replace("### ", "##### ").replace("#### ", "###### ")
+        )
+        card_fn = cat.load_card(card_id, contents=False)
+        with open(card_fn, "w") as oh:
+            oh.write(out_card)
+    else:
+        card_id = cat.load_card(args.merge, contents=False)
+        tempfile = cat.make_tempfile()
+        command = "diff -DVERSION1 "+card_id+" "+args.file+" > "+tempfile
+        print(command)
+        os.system(command)
+        cat.run_program(tempfile, "editor")
+        merge = False
+        while not merge:
+            r = input("Do the merge? [Y, n] ")
+            if "Y" in r:
+                merge = True
+            elif "n" in r:
+                break
+        if merge:
+            command2 = "cp "+tempfile+" "+card_id
+            print(command2)
+            os.system(command2)
+            
 def manage_ideas(args):
     cat = ExoCat()
     ideas_path = op.join(cat.config["folder"], "ideas.pkl")
@@ -501,10 +520,10 @@ if __name__ == "__main__":
         "include", help="Include a suitable Markdown file into the exocortex",
     )
     parser_include.add_argument(
-        "-f", "--file", help="The name of the file"
+        "-f", "--file", help="The name of the file", default=None
     )
     parser_include.add_argument(
-        "-m", "--merge", help="Merge with this card"
+        "-m", "--merge", help="Merge with this card", default=None
     )
     parser_include.set_defaults(func=include_card)
     parser_idea = subparsers.add_parser(
