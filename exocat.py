@@ -368,7 +368,7 @@ def include_card(args):
         with open(card_fn, "w") as oh:
             oh.write(out_card)
     else:
-        card_id = cat.load_card(args.merge, contents=False)
+        card_id = cat.load_card(ExoCat.get_card_id(args.merge), contents=False)
         tempfile = cat.make_tempfile()
         command = "diff -DVERSION1 "+card_id+" "+args.file+" > "+tempfile
         print(command)
@@ -394,15 +394,14 @@ def manage_ideas(args):
             pkl.dump([], oh)
     with open(ideas_path, "rb") as ih:
         ideas_list = pkl.load(ih)
-    if args.list:
+    if args.new:
+        ideas_list.append(args.new)
+        print("Added "+str(ideas_list.index(args.new))+": "+args.new)
+    elif args.solve:
+        print("Solved "+ideas_list.pop(int(args.solve)))
+    else:
         for i,a in enumerate(ideas_list):
             print(str(i)+": "+a)
-    else:
-        if args.new:
-            ideas_list.append(args.new)
-            print("Added "+str(ideas_list.index(args.new))+": "+args.new)
-        elif args.solve:
-            print("Solved "+ideas_list.pop(int(args.solve)))
     with open(ideas_path, "wb") as oh:
         pkl.dump(ideas_list, oh)
 
@@ -531,10 +530,6 @@ if __name__ == "__main__":
     )
     parser_idea.add_argument(
         "-n", "--new", help="Add a new idea to list"
-    )
-    parser_idea.add_argument(
-        "-l", "--list", help="List the existing ideas",
-        action="store_true"
     )
     parser_idea.add_argument(
         "-s", "--solve", help="Solve the idea"
