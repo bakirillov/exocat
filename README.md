@@ -38,6 +38,11 @@ Option `-l, --list` - print the list of ideas;
 Option `-n IDEA, --new IDEA` - add a new idea to the list;     
 Option `-s IDEA_NUMBER, --solve IDEA_NUMBER` - remove the idea from the list;     
 
+### Card merging
+`include` - add a .md file as a card;
+Option `-f, --file` sets the file to add;
+Option `-m, --merge` - id of the card to merge our file with. If not set, `include` will copy everything from the file into a new card.
+
 ### Miscellanea
 `media -c CARD_ID` - view media files associated with the specified card;    
 `unfinished -i CARD_ID -c COMMENT` - add a card into the unfinished list with a specified comment. The repeated application removes from the list.      
