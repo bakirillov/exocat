@@ -353,7 +353,7 @@ def include_card(args):
     cat = ExoCat()
     if not args.merge:
         card_id = cat.new(args.file, run_editor=False)
-        card = cat.load_card(card_id, contents=True, as_is=True)
+        card = cat.load_card(card_id, contents=True, as_is=False)
         with open(args.file, "r") as ih:
             the_file = ih.read()
         out_card = card.replace(
