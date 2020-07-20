@@ -5,6 +5,7 @@ import argparse
 import numpy as np
 import pandas as pd
 import pickle as pkl
+import os.path as op
 from tqdm import tqdm
 from datetime import datetime
 
@@ -18,12 +19,30 @@ class LeitnerBox():
     
     @staticmethod
     def load(fn):
-        with open(fn, "rb") as ih:
-            return(pkl.load(ih))
+        if op.splitext(fn)[-1] == ".pkl":
+            with open(fn, "rb") as ih:
+                return(pkl.load(ih))
+        else:
+            c = LeitnerBox.empty()
+            with open(fn, "r") as oh:
+                for a in oh:
+                    line = a.split("\t")
+                    ans = line[1]
+                    n = int(line[2])
+                    time = datetime.fromtimestamp(int(line[3]))
+                    c.pairs[line[0]] = (ans, n, time)
+            return(c)
         
     def save(self, fn):
-        with open(fn, "wb") as oh:
-            pkl.dump(self, oh)
+        if op.splitext(fn)[-1] == ".pkl":
+            with open(fn, "wb") as oh:
+                pkl.dump(self, oh)
+        else:
+            with open(fn, "w") as oh:
+                for a in self.pairs:
+                    line = a+"\t"+self.pairs[a][0]+"\t"+str(self.pairs[a][1])
+                    line += "\t"+str(int(self.pairs[a][2].timestamp()))+"\n"
+                    oh.write(line)
     
     @staticmethod
     def schedule(level):
