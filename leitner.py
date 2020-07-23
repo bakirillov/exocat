@@ -7,6 +7,7 @@ import pandas as pd
 import pickle as pkl
 import os.path as op
 from tqdm import tqdm
+from copy import deepcopy
 from datetime import datetime
 
 
@@ -15,13 +16,20 @@ class LeitnerBox():
     @classmethod
     def empty(C):
         pairs = {}
-        return(C(pairs))
+        ignore = []
+        return(C(pairs, ignore))
     
     @staticmethod
     def load(fn):
         if op.splitext(fn)[-1] == ".pkl":
             with open(fn, "rb") as ih:
-                return(pkl.load(ih))
+                o = pkl.load(ih)
+                try:
+                    len(o.ignore)
+                except Exception as E:
+                    print(E)
+                    o.ignore = []
+                return(o)
         else:
             c = LeitnerBox.empty()
             with open(fn, "r") as oh:
@@ -48,8 +56,9 @@ class LeitnerBox():
     def schedule(level):
         return(2**level)
     
-    def __init__(self, pairs):
+    def __init__(self, pairs, ignore):
         self.pairs = pairs
+        self.ignore = ignore
         
     @staticmethod
     def get_questions(file_contents):
@@ -85,10 +94,11 @@ class LeitnerBox():
                 self.pairs.update(noint_qa)
                 
     def study_one(self, question):
-        _ = input(question+"\n")
+        level = self.pairs[question][1]
+        print("Your current level is "+str(level))
+        a_hat = input(question+"\n")
         answer = self.pairs[question][0]
         print(answer+"\n")
-        level = self.pairs[question][1]
         tm = datetime.now()
         while True:
             correct = input("Is the answer correct? (Y,n)\n").lower()
@@ -97,9 +107,9 @@ class LeitnerBox():
                     level += 1
                 else:
                     level = 0
-                print("Your current level is "+str(level))
+                print("Your current level is "+str(level)+"\n\n")
                 break
-        return(answer, level, tm)
+        return(answer, level, tm, a_hat)
     
     def today(self):
         t = datetime.now()
@@ -120,9 +130,34 @@ class LeitnerBox():
     def study(self, catch_up=False):
         suitable = self.today()
         keys = np.random.permutation(list(suitable.keys()))
+        all_keys = len(keys)
         if catch_up:
             keys = keys[0:25]
-        print(str(len(keys))+" questions to study today.")
+        print(str(len(keys))+" questions to study today. (Total is "+str(all_keys)+")\n\n")
         for i,k in enumerate(keys):
             print("Question#"+str(i+1))
-            self.pairs[k] = self.study_one(k)
+            out = self.study_one(k)
+            if out[3][0:2] == "D:":
+                del self.pairs[k]
+                print("Deleted "+k+"\n\n")
+            elif out[3][0:2] == "I:":
+                self.ignore.append(k)
+                print("The following questions are ignored during the reindex and deleted:\n")
+                for a in self.ignore:
+                    print(a)
+                del self.pairs[k]
+                print("\n\n")
+            elif out[3][0:2] == "A:":
+                ans = deepcopy(self.pairs[k])
+                self.pairs[k] = (out[3][2:], ans[1], ans[2])
+                print("New answer is set\n")
+                print(self.pairs[k])
+            elif out[3][0:2] == "Q:":
+                ans = deepcopy(self.pairs[k])
+                del self.pairs[k]
+                self.pairs[out[3][2:]] = ans
+                print("New question is set\n")
+                print(self.pairs[out[3][2:]], out[3][2:])
+            else:
+                self.pairs[k] = (out[0], out[1], out[2])
+        
