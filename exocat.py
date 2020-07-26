@@ -110,7 +110,7 @@ class ExoCat():
         
     def new_wrap(self, cid):
         card = self.load_card(cid, True)
-        news = re.findall("\[\[\w+\]\]", card)
+        news = re.findall("\[\[.+\]\]", card)
         existing = [" ".join(self.load_card(a.replace(".md", "")).split("\n")[0].split(" ")[2:]) for a in self.cards()]
         for a in news:
             if a not in existing:
