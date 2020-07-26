@@ -7,7 +7,7 @@ DESCRIPTION_OF_THE_CART
 ## Contents
 CONTENTS_OF_THE_CARD    
 'A long and thorough description of an idea'    
-'Use [[]] to link two cards together with an explicit link through a term'
+'Use # to link two cards together with an explicit link through a term'
 
 ## Source
 SOURCE_OF_THE_CARD   

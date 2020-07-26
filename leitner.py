@@ -89,7 +89,7 @@ class LeitnerBox():
                 intersecting_keys = set(self.pairs.keys()) & set(qa.keys())
                 noint_qa = {}
                 for a in qa:
-                    if a not in intersecting_keys:
+                    if a not in intersecting_keys and a not in self.ignore:
                         noint_qa[a] = qa[a]
                 self.pairs.update(noint_qa)
                 

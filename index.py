@@ -40,8 +40,8 @@ class CatIndex():
     def examine(s, do_implicits=False, do_explicits=True):
         explicits = []
         if do_explicits:
-            explicits = re.findall("\[\[\w+\]\]", s)
-            explicits = [a.replace("[[", "").replace("]]", "").lower() for a in explicits]
+            explicits = re.findall("#\w+", s)
+            explicits = [a.replace("#", "").lower() for a in explicits]
         implicits = []
         if do_implicits:
             ss = "\n".join(list(filter(lambda x: "#" not in x, s.split("\n"))))

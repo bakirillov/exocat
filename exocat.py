@@ -101,11 +101,22 @@ class ExoCat():
         tmpl = "\n".join(spl)
         with open(path, "w") as oh:
             oh.write(tmpl)
-        print(cid)
+        print(cid+" "+title)
         if run_editor:
             self.run_program(path, "editor")
+            self.new_wrap(cid)
         else:
             return(cid)
+        
+    def new_wrap(self, cid):
+        card = self.load_card(cid, True)
+        news = re.findall("\[\[\w+\]\]", card)
+        existing = [" ".join(self.load_card(a.replace(".md", "")).split("\n")[0].split(" ")[2:]) for a in self.cards()]
+        for a in news:
+            if a not in existing:
+                nc = a.replace("[[", "").replace("]]", "")
+                self.new(nc, run_editor=False)
+        print("Created "+str(len(news))+" additional cards")
         
     def index(self, do_implicits=False, do_explicits=True):
         index_path = op.join(self.config["folder"], "index.pkl")
@@ -135,29 +146,6 @@ class ExoCat():
                     es[a] = links[a]
             links = es
         return(links)
-        
-    def links(self, cid, link_type, regex=None):
-        index_path = op.join(self.config["folder"], "index.pkl")
-        fn = self.make_tempfile()
-        if op.exists(index_path):
-            with open(index_path, "rb") as ih:
-                I = pkl.load(ih)
-            edges = sum([list(a) for a in I.g.edges([cid])], [])
-            sg = I.g.subgraph(edges)
-            with open(fn, "w") as oh:
-                link_types = [link_type]
-                if link_type == "all":
-                    link_types = ["explicits", "implicits"]
-                for lt in link_types:
-                    eas = self.filter_links(nx.get_edge_attributes(sg, lt), regex)
-                    for a in eas:
-                        self.write_down(
-                            oh, a.split(",")[0], a.split(",")[1], eas[a]
-                        )
-            print(fn)
-            self.run_program(fn, "editor")
-        else:
-            print("The index is empty")
     
     def overview(self, regex=None):
         index_path = op.join(self.config["folder"], "index.pkl")
@@ -184,7 +172,7 @@ class ExoCat():
                             oh, a.split(",")[0], a.split(",")[1], what[a]
                         )
             print(fn)
-            self.run_program(fn, "editor")
+            self.run_program(fn, "text")
         else:
             print("The index is empty")
     
@@ -192,6 +180,7 @@ class ExoCat():
         if not cid:
             cid = input("Enter the id of the card to edit: ")
         self.run_program(self.load_card(cid, False), "editor")
+        self.new_wrap(cid)
         
     def view(self, cid):
         if cid:
@@ -205,8 +194,24 @@ class ExoCat():
     @staticmethod
     def get_media(s):
         media = re.findall("@.+", s)
-        media = [a.replace("@", "").lower() for a in media]
+        media = [a.replace("@", "") for a in media]
+        other_media = re.findall("!\[\]\(\S+\)", s)
+        other_media = [a.replace("![](", "").replace(")", "") for a in other_media]
+        media.extend(other_media)
         return(media)
+        
+    def show_media(self, fn):
+        extension = op.splitext(fn)[-1].lower()
+        if extension in [".jpg", ".png", ".jpeg", ".giff", ".tiff"]:
+            self.run_program(fn, "images")
+        elif extension in [".mp3", ".wav"]:
+            self.run_program(fn, "audios")
+        elif extension in [".mp4", ".avi", ".mkv"]:
+            self.run_program(fn, "videos")
+        elif extension in [".pdf", ".djvu", ".md"]:
+            self.run_program(fn, "docs")
+        elif extension in [".doc", ".docx", ".odt"]:
+            self.run_program(fn, "word")
         
     def view_media(self, cid):
         if not cid:
@@ -215,34 +220,27 @@ class ExoCat():
         fns = ExoCat.get_media(card)
         for fn in fns:
             print(fn)
-            extension = op.splitext(fn)[-1].lower()
-            if extension in [".jpg", ".png", ".jpeg", ".giff", ".tiff"]:
-                self.run_program(fn, "images")
-            elif extension in [".mp3", ".wav"]:
-                self.run_program(fn, "audios")
-            elif extension in [".mp4", ".avi", ".mkv"]:
-                self.run_program(fn, "videos")
-            elif extension in [".pdf", ".djvu", ".md"]:
-                self.run_program(fn, "docs")
-            elif extension in [".doc", ".docx", ".odt"]:
-                self.run_program(fn, "word")
+            self.show_media(fn)
             input()
             
     def extract_section(self, text, section):
-        if section == "full":
-            return("\n".join(text))
-        elif section == "title":
-            return(text[0])
-        else:
-            section_start_line = list(filter(lambda x: x.startswith(self.sections[section]), text))
-            all_section_starts = list(filter(lambda x: text[x].startswith("## "), np.arange(len(text))))
-            if len(section_start_line) > 0:
-                section_start_line = section_start_line[0]
+        try:
+            if section == "full":
+                return("\n".join(text))
+            elif section == "title":
+                return(text[0])
             else:
-                return("No such section")
-            section_start = text.index(section_start_line)
-            section_end = list(filter(lambda x: x > section_start, all_section_starts))[0]
-            return("\n".join(text[section_start:section_end]))
+                section_start_line = list(filter(lambda x: x.startswith(self.sections[section]), text))
+                all_section_starts = list(filter(lambda x: text[x].startswith("## "), np.arange(len(text))))
+                if len(section_start_line) > 0:
+                    section_start_line = section_start_line[0]
+                else:
+                    return("No such section")
+                section_start = text.index(section_start_line)
+                section_end = list(filter(lambda x: x > section_start, all_section_starts))[0]
+                return("\n".join(text[section_start:section_end]))
+        except Exception as E:
+            print(E)
         
     def query(self, regex, section="full", open_newest=True, view_newest=True):
         files = self.cards()
@@ -261,9 +259,11 @@ class ExoCat():
             for a in filtered:
                 print(a)
             if open_newest:
+                cid = filtered[-1].split(" ")[1][:-1]
                 self.run_program(
-                    self.load_card(filtered[-1].split(" ")[1][:-1], False), "editor"
+                    self.load_card(cid, False), "editor"
                 )
+                self.new_wrap(cid)
             if view_newest:
                 self.run_program(
                     self.load_card(filtered[-1].split(" ")[1][:-1], False), "viewer"
@@ -296,10 +296,6 @@ def query_cards(args):
         args.regex, section=args.section, 
         open_newest=args.open, view_newest=args.view
     )
-        
-def links_cards(args):
-    cat = ExoCat()
-    cat.links(ExoCat.get_card_id(args.card_id), args.type, args.regex)
     
 def overview(args):
     cat = ExoCat()
@@ -467,22 +463,6 @@ if __name__ == "__main__":
         action="store_true", default=False
     )
     parser_query.set_defaults(func=query_cards)
-    parser_links = subparsers.add_parser(
-        "links", help="Query the index for links"
-    )
-    parser_links.add_argument(
-        "-c", "--card-id", help="The id of the card to show the links",
-        default=None
-    )
-    parser_links.add_argument(
-        "-t", "--type", help="The link type",
-        default="all", choices=["all", "explicits", "implicits"] 
-    )
-    parser_links.add_argument(
-        "-r", "--regex", help="Filter the links by regex",
-        action="store", default=None
-    )
-    parser_links.set_defaults(func=links_cards)
     parser_study = subparsers.add_parser(
         "study", help="Study the materials through the Leitner box system"
     )
