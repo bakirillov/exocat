@@ -13,6 +13,7 @@ View help with `python exocat.py --help`.
 `edit -c CARD_ID` - edit a card with given ID;    
 `view -c CARD_ID` - view a card with given ID;    
 `random` - edit a random card;     
+Encasing a [[word]] in square bracket would make the Exocat to create a new card with this word as a title
 
 ### Card queries
 `query -r REGEX -s SECTION` - find a set of cards that match given regex in a given section.    
@@ -22,10 +23,9 @@ An option `-v` lets view the latest card in a query result and an option `-o` op
 ### Link management
 `index -t TYPE` - construct an index over existing files. TYPE could be "all", "explicits" and "implicits".    
 There could be two kinds of links:    
-1. Explicit links - the links explicitly set by the user. Encasing a [[word]] in double square brackets make the word a node in a graph of explicit links;   
+1. Explicit links - the links explicitly set by the user. Making the hashtag of a \#word would make the word a node in a graph of explicit links;   
 2. Implicit links - the links implicitly formed by the language analysis. Shared non stop-word nouns and verbs form implicit links.   
 `overview -r REGEX` - view the existing links in the index and filter them using a regex;    
-`links -c CARD_ID -t TYPE -r REGEX` - view the existing links of a particular card that belong to a type and match a regex;    
 
 ### Study mode
 `study` - runs the study mode: Leitner box spaced repetition;    
