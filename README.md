@@ -24,7 +24,8 @@ An option `-v` lets view the latest card in a query result and an option `-o` op
 `index -t TYPE` - construct an index over existing files. TYPE could be "all", "explicits" and "implicits".    
 There could be two kinds of links:    
 1. Explicit links - the links explicitly set by the user. Making the hashtag of a \#word would make the word a node in a graph of explicit links;   
-2. Implicit links - the links implicitly formed by the language analysis. Shared non stop-word nouns and verbs form implicit links.   
+2. Implicit links - the links implicitly formed by the language analysis. Shared non stop-word nouns and verbs form implicit links.       
+
 `overview -r REGEX` - view the existing links in the index and filter them using a regex;    
 
 ### Study mode
