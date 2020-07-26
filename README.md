@@ -48,6 +48,9 @@ Option `-m, --merge` - id of the card to merge our file with. If not set, `inclu
 `unfinished -i CARD_ID -c COMMENT` - add a card into the unfinished list with a specified comment. The repeated application removes from the list.      
 Run `unfinished` with no options to list all the unfinished cards.     
 
+### Migration
+If you have used exocat before the 0.5 version, run `python migrate.py --version 0.5 --path /path/to/your/exocortex` to convert the existing exocortex into 0.5 format.
+
 ## TODO:
 1. Readme and tutorial    
 2. pip package   
