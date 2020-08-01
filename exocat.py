@@ -113,6 +113,7 @@ class ExoCat():
         news = re.findall("\[\[.+\]\]", card)
         existing = [" ".join(self.load_card(a.replace(".md", "")).split("\n")[0].split(" ")[2:]) for a in self.cards()]
         for a in news:
+            time.sleep(1)
             if a not in existing:
                 nc = a.replace("[[", "").replace("]]", "")
                 self.new(nc, run_editor=False)
@@ -147,7 +148,7 @@ class ExoCat():
             links = es
         return(links)
     
-    def overview(self, regex=None):
+    def overview(self, regex=None, return_list=False):
         index_path = op.join(self.config["folder"], "index.pkl")
         fn = self.make_tempfile()
         if op.exists(index_path):
@@ -172,9 +173,12 @@ class ExoCat():
                             oh, a.split(",")[0], a.split(",")[1], what[a]
                         )
             print(fn)
-            self.run_program(fn, "text")
+            if not return_list:
+                self.run_program(fn, "text")
         else:
             print("The index is empty")
+        if return_list:
+            return(fn)
     
     def edit(self, cid):
         if not cid:
@@ -401,6 +405,18 @@ def manage_ideas(args):
     with open(ideas_path, "wb") as oh:
         pkl.dump(ideas_list, oh)
 
+def manage_orphans(args):
+    cat = ExoCat()
+    cards = [op.splitext(op.split(a)[-1])[0] for a in cat.cards()]
+    overview = cat.overview(return_list=True)
+    with open(overview, "r") as ih:
+        linked = list(map(lambda x: re.findall("#\s[0-9]+", x), [a for a in ih]))
+        linked = [a[0].split(" ")[-1] for a in list(filter(lambda x: len(x) == 1, linked))]
+    orphans = set(cards) - set(linked)
+    for a in orphans:
+        fn = cat.load_card(a, contents=False)
+        with open(fn, "r") as ih:
+            print(ih.read().split("\n")[0])
 
 
 if __name__ == "__main__":
@@ -515,5 +531,9 @@ if __name__ == "__main__":
         "-s", "--solve", help="Solve the idea"
     )
     parser_idea.set_defaults(func=manage_ideas)
+    parser_orphan = subparsers.add_parser(
+        "orphans", help="List orphan cards",
+    )
+    parser_orphan.set_defaults(func=manage_orphans)
     args = parser.parse_args()
     args.func(args)
