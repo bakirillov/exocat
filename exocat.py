@@ -112,12 +112,14 @@ class ExoCat():
         card = self.load_card(cid, True)
         news = re.findall("\[\[.+\]\]", card)
         existing = [" ".join(self.load_card(a.replace(".md", "")).split("\n")[0].split(" ")[2:]) for a in self.cards()]
+        n = 0
         for a in news:
             time.sleep(1)
-            if a not in existing:
-                nc = a.replace("[[", "").replace("]]", "")
+            nc = a.replace("[[", "").replace("]]", "")
+            if nc not in existing:
+                n += 1
                 self.new(nc, run_editor=False)
-        print("Created "+str(len(news))+" additional cards")
+        print("Created "+str(n)+" additional cards")
         
     def index(self, do_implicits=False, do_explicits=True):
         index_path = op.join(self.config["folder"], "index.pkl")
