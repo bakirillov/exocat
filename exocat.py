@@ -128,6 +128,7 @@ class ExoCat():
                 I = pkl.load(ih)
         else:
             I = CatIndex.empty()
+            I.zf = self.config["zipf_frequency"]
         files = self.cards()
         I.index(files, do_implicits, do_explicits)
         I.save(index_path)

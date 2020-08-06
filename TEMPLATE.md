@@ -1,20 +1,20 @@
 # ID: TITLE
 
 ## Description
-DESCRIPTION_OF_THE_CART
+'DESCRIPTION_OF_THE_CART'
 'no more than 5 sentences, short description of an idea'
 
 ## Contents
-CONTENTS_OF_THE_CARD    
+'CONTENTS_OF_THE_CARD'    
 'A long and thorough description of an idea'    
 'Use # to link two cards together with an explicit link through a term'
 
 ## Source
-SOURCE_OF_THE_CARD   
+'SOURCE_OF_THE_CARD'   
 'Link or book, article etc. May be more than one.'    
 
 ## Comments
-COMMENTS_FOR_THE_CARD   
+'COMMENTS_FOR_THE_CARD'   
 'Comments about the contents of the card'   
 
 ## Questions

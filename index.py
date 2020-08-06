@@ -4,6 +4,7 @@ import json
 import time
 import nltk
 import argparse
+import wordfreq
 import pymorphy2
 import pickle as pkl
 import os.path as op
@@ -25,26 +26,35 @@ class CatIndex():
     def empty(C):
         g = nx.Graph()
         last = None
-        return(C(g, last))
+        zf = 3
+        return(C(g, last, zf))
     
     @staticmethod
     def load(fn):
         with open(fn, "rb") as ih:
             return(pkl.load(ih))
         
-    def __init__(self, g, last):
+    def __init__(self, g, last, zipf_frequency):
         self.g = g
         self.last = last
+        self.zf = zipf_frequency
     
     @staticmethod
-    def examine(s, do_implicits=False, do_explicits=True):
+    def examine(s, szf, do_implicits=False, do_explicits=True):
         explicits = []
         if do_explicits:
             explicits = re.findall("#\w+", s)
             explicits = [a.replace("#", "").lower() for a in explicits]
         implicits = []
         if do_implicits:
-            ss = "\n".join(list(filter(lambda x: "#" not in x, s.split("\n"))))
+            ss = "\n".join(
+                list(
+                    filter(
+                        lambda x: "#" not in x and "_" not in x and not re.match("'.+'", x), 
+                        s.split("\n")
+                    )
+                )
+            )
             spl = list(
                 filter(
                     lambda x: re.match(
@@ -58,7 +68,9 @@ class CatIndex():
                 for b in ru:
                     for c in CatIndex.ru_linkable:
                         if str(b.tag).startswith(c):
-                            implicits.append(a)
+                            zf = wordfreq.zipf_frequency(a, 'ru')
+                            if zf <= szf:
+                                implicits.append(a)
                 try:
                     en = nltk.pos_tag([a])
                 except:
@@ -67,7 +79,9 @@ class CatIndex():
                     for b in en:
                         for c in CatIndex.en_linkable:
                             if b[1].startswith(c):
-                                implicits.append(a)
+                                zf = wordfreq.zipf_frequency(a, 'en')
+                                if zf <= szf:
+                                    implicits.append(a)
         r = {
             "explicits": explicits, "implicits": implicits
         }
@@ -87,13 +101,13 @@ class CatIndex():
         for a in tqdm(list_of_files):
             with open(a, "r") as ih:
                 a_file = ih.read().lower()
-            a_linkables = CatIndex.examine(a_file, do_implicits, do_explicits)
+            a_linkables = CatIndex.examine(a_file, self.zf, do_implicits, do_explicits)
             a_cid = op.split(a)[-1].replace(".md", "")
             for b in lst:
                 if a != b:
                     with open(b, "r") as ih:
                         b_file = ih.read()
-                    b_linkables = CatIndex.examine(b_file, do_implicits, do_explicits)
+                    b_linkables = CatIndex.examine(b_file, self.zf, do_implicits, do_explicits)
                     ebunch = {}
                     add_edge = False
                     for c in b_linkables:
