@@ -114,9 +114,9 @@ class ExoCat():
         existing = [" ".join(self.load_card(a.replace(".md", "")).split("\n")[0].split(" ")[2:]) for a in self.cards()]
         n = 0
         for a in news:
-            time.sleep(1)
             nc = a.replace("[[", "").replace("]]", "")
             if nc not in existing:
+                time.sleep(1)
                 n += 1
                 self.new(nc, run_editor=False)
         print("Created "+str(n)+" additional cards")
