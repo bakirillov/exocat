@@ -31,6 +31,16 @@ class ExoCat():
             "contents": "## contents", "questions": "## questions",
             "answers": "## answers"
         }
+        self.keycards_path = op.join(self.config["folder"], "keycards.pkl")
+        if not op.exists(self.keycards_path):
+            self.keycards = {}
+        else:
+            with open(self.keycards_path, "rb") as ih:
+                self.keycards = pkl.load(ih)
+                
+    def write_keycards(self):
+        with open(self.keycards_path, "wb") as oh:
+            pkl.dump(self.keycards, oh)
         
     @staticmethod
     def to_ms(x):
@@ -59,10 +69,18 @@ class ExoCat():
         files = [op.join(self.config["folder"], "cards", a) for a in files]
         return(files)
     
-    @staticmethod
-    def get_card_id(s):
+    def get_card_id(self, s):
         if s:
-            return(re.search("\d+", s)[0])
+            u = re.search("\d+", s)[0]
+            print(s, u)
+            if not u and s:
+                print("happens")
+                if s in self.keycards:
+                    print("happens")
+                    return(self.keycards[s])
+                else:
+                    print("shouldnt happen")
+                    return(None)
         else:
             return(s)
     
@@ -87,13 +105,16 @@ class ExoCat():
         fn = op.join(tempdir, datetime.now().strftime("%d%m%Y%H%M%S")+".txt")
         return(fn)
         
-    def new(self, title, run_editor=True):
+    def new(self, title, run_editor=True, inherit=None):
         cid = datetime.now().strftime("%d%m%Y%H%M%S")
         if not op.exists(self.config["folder"]):
             os.makedirs(self.config["folder"])
             os.makedirs(op.join(self.config["folder"], "cards"))
         path = self.load_card(cid, False)
-        tmpl = self.template.replace("ID", cid)
+        if not inherit:
+            tmpl = self.template.replace("ID", cid)
+        else:
+            tmpl = self.load_card(inherit, as_is=True).replace("ID", cid)
         if not title:
             title = input("Enter the title of the card: ")
         tmpl = tmpl.replace("TITLE", title)
@@ -111,7 +132,10 @@ class ExoCat():
     def new_wrap(self, cid):
         card = self.load_card(cid, True)
         news = re.findall("\[\[.+\]\]", card)
-        existing = [" ".join(self.load_card(a.replace(".md", "")).split("\n")[0].split(" ")[2:]) for a in self.cards()]
+        existing = [
+            " ".join(self.load_card(a.replace(".md", "")).split("\n")[0].split(" ")[2:]) 
+                for a in self.cards()
+        ]
         n = 0
         for a in news:
             nc = a.replace("[[", "").replace("]]", "")
@@ -223,7 +247,7 @@ class ExoCat():
     def view_media(self, cid):
         if not cid:
             cid = input("Enter the id of the card to view media from: ")
-        card = self.load_card(cid, True)
+        card = self.load_card(cid, True, as_is=True)
         fns = ExoCat.get_media(card)
         for fn in fns:
             print(fn)
@@ -237,14 +261,20 @@ class ExoCat():
             elif section == "title":
                 return(text[0])
             else:
-                section_start_line = list(filter(lambda x: x.startswith(self.sections[section]), text))
-                all_section_starts = list(filter(lambda x: text[x].startswith("## "), np.arange(len(text))))
+                section_start_line = list(
+                    filter(lambda x: x.startswith(self.sections[section]), text)
+                )
+                all_section_starts = list(
+                    filter(lambda x: text[x].startswith("## "), np.arange(len(text)))
+                )
                 if len(section_start_line) > 0:
                     section_start_line = section_start_line[0]
                 else:
                     return("No such section")
                 section_start = text.index(section_start_line)
-                section_end = list(filter(lambda x: x > section_start, all_section_starts))[0]
+                section_end = list(
+                    filter(lambda x: x > section_start, all_section_starts)
+                )[0]
                 return("\n".join(text[section_start:section_end]))
         except Exception as E:
             print(E)
@@ -281,15 +311,15 @@ class ExoCat():
         
 def new_card(args):
     cat = ExoCat()
-    cat.new(args.title)
+    cat.new(args.title, inherit=args.inherit)
     
 def view_card(args):
     cat = ExoCat()
-    cat.view(ExoCat.get_card_id(args.card_id))
+    cat.view(cat.get_card_id(args.card_id))
     
 def edit_card(args):
     cat = ExoCat()
-    cat.edit(ExoCat.get_card_id(args.card_id))
+    cat.edit(cat.get_card_id(args.card_id))
 
 def index_cards(args):
     cat = ExoCat()
@@ -330,7 +360,7 @@ def random_card(args):
     
 def media_cards(args):
     cat = ExoCat()
-    cat.view_media(ExoCat.get_card_id(args.card_id))
+    cat.view_media(cat.get_card_id(args.card_id))
     
 def unfinished_cards(args):
     cat = ExoCat()
@@ -341,7 +371,7 @@ def unfinished_cards(args):
     with open(unf_path, "rb") as ih:
         unf_list = pkl.load(ih)
     if args.id:
-        cid = ExoCat.get_card_id(args.id)
+        cid = cat.get_card_id(args.id)
         if cid not in unf_list:
             unf_list[cid] = args.comment if args.comment else ""
         else:
@@ -371,7 +401,7 @@ def include_card(args):
         with open(card_fn, "w") as oh:
             oh.write(out_card)
     else:
-        card_id = cat.load_card(ExoCat.get_card_id(args.merge), contents=False)
+        card_id = cat.load_card(cat.get_card_id(args.merge), contents=False)
         tempfile = cat.make_tempfile()
         command = "diff -DVERSION1 "+card_id+" "+args.file+" > "+tempfile
         print(command)
@@ -421,6 +451,22 @@ def manage_orphans(args):
         with open(fn, "r") as ih:
             print(ih.read().split("\n")[0])
 
+def manage_keycards(args):
+    cat = ExoCat()
+    if args.keyword and args.card_id:
+        print("args.card_id", args.card_id)
+        if args.keyword not in cat.keycards:
+            cat.keycards[args.keyword] = cat.get_card_id(args.card_id)
+            print("gci", cat.get_card_id(args.card_id))
+            print("k[v]", cat.keycards[args.keyword])
+        else:
+            del cat.keycards[args.keyword]
+        cat.write_keycards()
+    else:
+        print(cat.keycards)
+        for a in cat.keycards:
+            print(a+" --> "+cat.keycards[a])
+
 
 if __name__ == "__main__":
     print(THECAT)
@@ -437,6 +483,10 @@ if __name__ == "__main__":
     parser_new = subparsers.add_parser("new", help="Make a new card")
     parser_new.add_argument(
         "-t", "--title", help="The title of the card",
+        default=None
+    )
+    parser_new.add_argument(
+        "-i", "--inherit", help="Inherit from a template card",
         default=None
     )
     parser_new.set_defaults(func=new_card)
@@ -538,5 +588,15 @@ if __name__ == "__main__":
         "orphans", help="List orphan cards",
     )
     parser_orphan.set_defaults(func=manage_orphans)
+    parser_keycard = subparsers.add_parser(
+        "keycard", help="Manage keycard"
+    )
+    parser_keycard.add_argument(
+        "-k", "--keyword", help="A keyword for a card", default=None
+    )
+    parser_keycard.add_argument(
+        "-c", "--card-id", help="A card id for a keyword", default=None
+    )
+    parser_keycard.set_defaults(func=manage_keycards)
     args = parser.parse_args()
     args.func(args)
