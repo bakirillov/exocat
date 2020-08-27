@@ -71,16 +71,14 @@ class ExoCat():
     
     def get_card_id(self, s):
         if s:
-            u = re.search("\d+", s)[0]
-            print(s, u)
+            u = re.search("\d+", s)
             if not u and s:
-                print("happens")
                 if s in self.keycards:
-                    print("happens")
                     return(self.keycards[s])
                 else:
-                    print("shouldnt happen")
                     return(None)
+            else:
+                return(u[0])
         else:
             return(s)
     
@@ -454,16 +452,12 @@ def manage_orphans(args):
 def manage_keycards(args):
     cat = ExoCat()
     if args.keyword and args.card_id:
-        print("args.card_id", args.card_id)
         if args.keyword not in cat.keycards:
             cat.keycards[args.keyword] = cat.get_card_id(args.card_id)
-            print("gci", cat.get_card_id(args.card_id))
-            print("k[v]", cat.keycards[args.keyword])
         else:
             del cat.keycards[args.keyword]
         cat.write_keycards()
     else:
-        print(cat.keycards)
         for a in cat.keycards:
             print(a+" --> "+cat.keycards[a])
 
