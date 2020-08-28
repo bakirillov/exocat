@@ -21,7 +21,7 @@ Section could be "title", "description", "contents", "questions", "answers". A "
 An option `-v` lets view the latest card in a query result and an option `-o` opens the latest card in an editor.   
 
 ### Keycards
-`keycard -c CARD_ID -n NAME` - binds a name with a card id. This card then will be searchable by name. Second run removes the binding.
+`keycard -c CARD_ID -k KEYWORK` - binds a keyword with a card id. This card then will be searchable by name. Second run removes the binding.
 
 ### Link management
 `index -t TYPE` - construct an index over existing files. TYPE could be "all", "explicits" and "implicits".    
