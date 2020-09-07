@@ -457,6 +457,9 @@ def manage_keycards(args):
         else:
             del cat.keycards[args.keyword]
         cat.write_keycards()
+    elif args.keyword and not args.card_id:
+        del cat.keycards[args.keyword]
+        cat.write_keycards()
     else:
         for a in cat.keycards:
             print(a+" --> "+cat.keycards[a])
