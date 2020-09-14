@@ -346,7 +346,7 @@ def study_cards(args):
         lb = LeitnerBox.load(box_fn)
     if args.reindex:
         lb.index(cat.cards())
-    lb.study(args.catch_up)
+    lb.study(args.catch_up, args.plot)
     lb.save(box_fn)
 
 def random_card(args):
@@ -539,6 +539,10 @@ if __name__ == "__main__":
     parser_study.add_argument(
         "-c", "--catch-up", help="Limits the number of cards reviewed to 25",
         action="store_true"
+    )
+    parser_study.add_argument(
+        "-p", "--plot", help="Use the app to plot pictures",
+        action="store", default=None
     )
     parser_study.set_defaults(func=study_cards)
     parser_media = subparsers.add_parser(

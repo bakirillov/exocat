@@ -96,9 +96,13 @@ class LeitnerBox():
     def study_one(self, question):
         level = self.pairs[question][1]
         print("Your current level is "+str(level))
+        if self.plot and "@" in question:
+            os.system(self.plot+" "+question.split("@")[-1])
         a_hat = input(question+"\n")
         answer = self.pairs[question][0]
         print(answer+"\n")
+        if self.plot and "@" in answer:
+            os.system(self.plot+" "+answer.split("@")[-1])
         tm = datetime.now()
         while True:
             correct = input("Is the answer correct? (Y,n)\n").lower()
@@ -127,10 +131,11 @@ class LeitnerBox():
                     suitable[question] = (answer, lv, qt)
         return(suitable)
     
-    def study(self, catch_up=False):
+    def study(self, catch_up=False, plot=None):
         suitable = self.today()
         keys = np.random.permutation(list(suitable.keys()))
         all_keys = len(keys)
+        self.plot = plot
         if catch_up:
             keys = keys[0:25]
         print(str(len(keys))+" questions to study today. (Total is "+str(all_keys)+")\n\n")
