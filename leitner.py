@@ -1,4 +1,6 @@
+import re
 import os
+import cv2
 import json
 import time
 import argparse
@@ -93,16 +95,34 @@ class LeitnerBox():
                         noint_qa[a] = qa[a]
                 self.pairs.update(noint_qa)
                 
+    @staticmethod
+    def load_img(question):
+        try:
+            graphics_regex = "(\w|\/|\\|\s|\.)+--\d+--\d+--\d+--\d+"
+            file_and_bb = re.search(graphics_regex, question)
+            print(file_and_bb)
+            file_and_bb = file_and_bb[0].split("--")
+            file = file_and_bb[0]
+            bb = [int(a) for a in file_and_bb[1:]]
+            img = cv2.imread(file)
+            if sum(bb) != 0:
+                img = img[bb[1]:bb[3], bb[0]:bb[2], :]
+            cv2.imwrite("temp.png", img)
+        except Exception as E:
+            print(E)
+                
     def study_one(self, question):
         level = self.pairs[question][1]
         print("Your current level is "+str(level))
         if self.plot and "@" in question:
-            os.system(self.plot+" "+question.split("@")[-1])
+            LeitnerBox.load_img(question)
+            os.system(self.plot+" temp.png")
         a_hat = input(question+"\n")
         answer = self.pairs[question][0]
         print(answer+"\n")
         if self.plot and "@" in answer:
-            os.system(self.plot+" "+answer.split("@")[-1])
+            LeitnerBox.load_img(answer)
+            os.system(self.plot+" temp.png")
         tm = datetime.now()
         while True:
             correct = input("Is the answer correct? (Y,n)\n").lower()
