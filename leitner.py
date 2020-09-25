@@ -114,11 +114,14 @@ class LeitnerBox():
     def study_one(self, question):
         level = self.pairs[question][1]
         print("Your current level is "+str(level))
+        answer = self.pairs[question][0]
+        if self.plot and "@" in answer:
+            print(answer)
         if self.plot and "@" in question:
+            print(question)
             LeitnerBox.load_img(question)
             os.system(self.plot+" temp.png")
         a_hat = input(question+"\n")
-        answer = self.pairs[question][0]
         print(answer+"\n")
         if self.plot and "@" in answer:
             LeitnerBox.load_img(answer)
