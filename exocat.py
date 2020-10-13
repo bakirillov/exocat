@@ -112,7 +112,7 @@ class ExoCat():
         if not inherit:
             tmpl = self.template.replace("ID", cid)
         else:
-            tmpl = self.load_card(inherit, as_is=True).replace("ID", cid)
+            tmpl = self.load_card(self.get_card_id(inherit), as_is=True).replace("ID", cid)
         if not title:
             title = input("Enter the title of the card: ")
         tmpl = tmpl.replace("TITLE", title)
